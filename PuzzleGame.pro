@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,8 +19,11 @@ SOURCES += \
     bmp/bmp.cpp \
     bmp/bmpfileheader.cpp \
     bmp/bmpinfoheader.cpp \
+    database.cpp \
+    databasemanager.cpp \
     defaultpuzzlemenuwindow.cpp \
     generatepuzzlemenuwindow.cpp \
+    leaderboard.cpp \
     main.cpp \
     mainwindow.cpp \
     mainwindowpuzzle.cpp \
@@ -31,8 +34,11 @@ HEADERS += \
     bmp/bmp.h \
     bmp/bmpfileheader.h \
     bmp/bmpinfoheader.h \
+    database.h \
+    databasemanager.h \
     defaultpuzzlemenuwindow.h \
     generatepuzzlemenuwindow.h \
+    leaderboard.h \
     mainwindow.h \
     mainwindowpuzzle.h \
     puzzle/pieceslist.h \
