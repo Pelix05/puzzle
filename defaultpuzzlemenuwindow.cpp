@@ -9,8 +9,8 @@
 #include <QFrame>
 #include <QSpacerItem>
 
-DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(DatabaseManager *db, QWidget *parent)
-    : QWidget(parent), dbManager(db)
+DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(DatabaseManager *db)
+    :  dbManager(db)
 {
     setWindowTitle("Choose Level");
     setFixedSize(800, 600);

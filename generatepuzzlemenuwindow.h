@@ -11,7 +11,7 @@ class GeneratePuzzleMenuWindow : public QWidget
 {
     Q_OBJECT
 public:
-    explicit GeneratePuzzleMenuWindow(DatabaseManager* db, QWidget *parent = nullptr);
+    explicit GeneratePuzzleMenuWindow(DatabaseManager* db);
 
 private slots:
     void chooseImage();

@@ -16,15 +16,16 @@
 // Implement the static background function
 void MainWindow::applyBackground(QWidget *widget, const QString &imagePath)
 {
+    widget->setAutoFillBackground(true);
     widget->setStyleSheet(QString(
                               "QWidget {"
-                              "background-image: url(:/images/background.jpg);"
+                              "background-image: url(%1);"
                               "background-position: center;"
                               "background-repeat: no-repeat;"
-                              "background-size: cover;"
                               "}"
                               ).arg(imagePath));
 }
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -33,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     setFixedSize(800, 600);
 
     // Apply background
-    applyBackground(this);
+    applyBackground(this,":/images/background.jpg");
 
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
@@ -121,15 +122,15 @@ QPushButton* MainWindow::createGlassButton(const QString &text)
 
 void MainWindow::openDefaultPuzzleMenu()
 {
-    auto *win = new DefaultPuzzleMenuWindow(dbManager, this);
+    auto *win = new DefaultPuzzleMenuWindow(dbManager);
     win->setAttribute(Qt::WA_DeleteOnClose);
-    MainWindow::applyBackground(win); // Apply same background
+    MainWindow::applyBackground(win, ":/images/background.jpg"); // Apply same background
     win->show();
 }
 
 void MainWindow::openGeneratePuzzleMenu()
 {
-    auto *win = new GeneratePuzzleMenuWindow(dbManager, this);
+    auto *win = new GeneratePuzzleMenuWindow(dbManager);
     win->setAttribute(Qt::WA_DeleteOnClose);
     MainWindow::applyBackground(win); // Apply same background
     win->show();
