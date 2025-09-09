@@ -16,24 +16,28 @@ void MainWindow::applyBackground(QWidget *widget, const QString &imagePath)
 {
     widget->setStyleSheet(QString(
                               "QWidget {"
-                              "background-image: url(:/images/background.jpg);"
+                              "background-image: url(:/images/background.png);"
                               "background-position: center;"
                               "background-repeat: no-repeat;"
                               "background-size: cover;"
                               "}"
                               ).arg(imagePath));
 }
-
+// mainwindow.cpp - in the constructor
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle(tr("Puzzle Game"));
-    setFixedSize(800, 600);
+    setFixedSize(1000, 700); // Increased from 800x600 to 1000x700
 
-    // Apply background
-    applyBackground(this);
-
+    // Set background image
     QWidget *central = new QWidget(this);
+    central->setStyleSheet("QWidget {"
+                           "background-image: url(:/images/background.png);"
+                           "background-position: center;"
+                           "background-repeat: no-repeat;"
+                           "background-size: cover;"
+                           "}");
     setCentralWidget(central);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(central);
@@ -48,24 +52,26 @@ MainWindow::MainWindow(QWidget *parent)
 
     QVBoxLayout *overlayLayout = new QVBoxLayout(overlay);
     overlayLayout->setSpacing(30);
-    overlayLayout->setContentsMargins(50, 50, 50, 50);
+    overlayLayout->setContentsMargins(50, 50, 50, 50); // Increased margins
 
-    // Title
+    // Title - make it larger
     QLabel *titleLabel = new QLabel("PUZZLE GAME");
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setStyleSheet("QLabel {"
                               "color: white;"
-                              "font-size: 36px;"
+                              "font-size: 42px;" // Increased from 36px
                               "font-weight: bold;"
                               "text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"
+                              "margin-bottom: 40px;" // Increased spacing
                               "}");
     overlayLayout->addStretch();
     overlayLayout->addWidget(titleLabel);
 
-    // Buttons
+    // Buttons - make them larger
     QPushButton *defaultPuzzleBtn = createGlassButton("Puzzle Bawaan");
     QPushButton *generatePuzzleBtn = createGlassButton("Generate Puzzle");
 
+    // Update createGlassButton to make buttons larger
     overlayLayout->addWidget(defaultPuzzleBtn);
     overlayLayout->addWidget(generatePuzzleBtn);
     overlayLayout->addStretch();
@@ -79,14 +85,14 @@ MainWindow::MainWindow(QWidget *parent)
 QPushButton* MainWindow::createGlassButton(const QString &text)
 {
     QPushButton *button = new QPushButton(text);
-    button->setFixedSize(250, 60);
+    button->setFixedSize(350, 80); // Increased from 250x60 to 350x80
     button->setStyleSheet(
         "QPushButton {"
         "background: rgba(255, 255, 255, 100);"
         "border: 2px solid rgba(255, 255, 255, 150);"
         "border-radius: 15px;"
         "color: white;"
-        "font-size: 16px;"
+        "font-size: 18px;" // Increased font size
         "font-weight: bold;"
         "}"
         "QPushButton:hover {"

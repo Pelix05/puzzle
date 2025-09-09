@@ -2,6 +2,6 @@
     <qresource prefix="/images">
         <file>colorImg.bmp</file>
         <file>greyImg.bmp</file>
-	<file>background.jpg</file>
+	<file>background.png</file>
     </qresource>
 </RCC>

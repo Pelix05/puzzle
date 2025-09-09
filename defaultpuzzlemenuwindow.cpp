@@ -12,10 +12,10 @@ DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(QWidget *parent)
     : QWidget(parent)
 {
     setWindowTitle("Choose Level");
-    setFixedSize(800, 600);
+    setFixedSize(1700, 1000);
 
     // Method 1: Use palette instead of stylesheet
-    QPixmap background(":/images/background.jpg");
+    QPixmap background(":/images/background.png");
     if (!background.isNull()) {
         QPalette palette;
         palette.setBrush(this->backgroundRole(), QBrush(background.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
@@ -49,8 +49,8 @@ DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(QWidget *parent)
     QLabel *titleLabel = new QLabel("CHOOSE DIFFICULTY LEVEL");
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setStyleSheet("QLabel {"
-                              "color: black;"
-                              "font-size: 28px;"
+                              "color: white;"
+                              "font-size: 35px;"
                               "font-weight: bold;"
                               "text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"
                               "margin-bottom: 30px;"
@@ -68,7 +68,7 @@ DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(QWidget *parent)
         "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6a11cb, stop: 1 #2575fc);"
         "border: 2px solid rgba(255, 255, 255, 100);"
         "border-radius: 12px;"
-        "color: black;"
+        "color: white;"
         "font-size: 16px;"
         "font-weight: bold;"
         "padding: 20px;"
@@ -117,7 +117,7 @@ DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(QWidget *parent)
 
     // Add some description labels
     QLabel *descLabel = new QLabel("Select a difficulty level to start the puzzle game:");
-    descLabel->setStyleSheet("QLabel { color: black; font-size: 14px; margin-bottom: 20px; }");
+    descLabel->setStyleSheet("QLabel { color: white; font-size: 17px;font-weight:bold; margin-bottom: 10px; }");
     descLabel->setAlignment(Qt::AlignCenter);
 
     // Layout organization

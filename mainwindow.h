@@ -10,7 +10,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
 
     // Add this static function
-    static void applyBackground(QWidget *widget, const QString &imagePath = ":/images/background.jpg");
+    static void applyBackground(QWidget *widget, const QString &imagePath = ":/images/background.png");
 
 private slots:
     void openDefaultPuzzleMenu();
