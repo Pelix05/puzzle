@@ -7,8 +7,6 @@ int main(int argc, char *argv[])
 
     MainWindow mainMenu;
     mainMenu.show();
-    mainMenu.show();
-
 
 
     return app.exec();
