@@ -4,19 +4,21 @@
 #pragma once
 #include <QWidget>
 #include <QLabel>
+#include "databasemanager.h"
 
 
 class GeneratePuzzleMenuWindow : public QWidget
 {
     Q_OBJECT
 public:
-    explicit GeneratePuzzleMenuWindow(QWidget *parent = nullptr);
+    explicit GeneratePuzzleMenuWindow(DatabaseManager* db, QWidget *parent = nullptr);
 
 private slots:
     void chooseImage();
     void startCustomPuzzle();
 
 private:
+    DatabaseManager *dbManager;
     QString selectedImagePath;
     int gridSize;
     int timerSeconds;

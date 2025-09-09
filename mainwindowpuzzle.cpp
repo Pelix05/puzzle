@@ -1,14 +1,16 @@
 #include "mainwindowpuzzle.h"
+#include "databasemanager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QPixmap>
 #include <QPushButton>
 #include <QRandomGenerator>
+#include <QInputDialog>
 
 
-MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int grid, int timerSeconds, QWidget *parent)
-    : QMainWindow(parent), gridSize(grid), timeLeft(timerSeconds)
+MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int grid, int timerSeconds, DatabaseManager *db,  QWidget *parent)
+    : QMainWindow(parent), gridSize(grid), timeLeft(timerSeconds), dbManager(db), moveCount(0)
 {
     puzzleWidget = new PuzzleWidget(400, gridSize, this);
     piecesList = new PiecesList(puzzleWidget->width(), this);
@@ -23,6 +25,7 @@ MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &grey
     connect(puzzleWidget, &PuzzleWidget::piecePlaced, this,
             [this](QPixmap pix, QPoint loc, QRect rect){
                 moveHistory.append({pix, loc, rect});
+                moveCount ++;
             });
 
 
@@ -130,6 +133,7 @@ void MainWindowPuzzle::setCompleted()
 {
     timer->stop();
     QMessageBox::information(this, "Puzzle Selesai", "Selamat! Puzzle selesai.");
+    promptAndSaveRecord();
 }
 
 void MainWindowPuzzle::updateTimer()
@@ -140,6 +144,32 @@ void MainWindowPuzzle::updateTimer()
     {
         timer->stop();
         QMessageBox::warning(this, "Time's up!", "Waktu habis!");
+    }
+}
+
+void MainWindowPuzzle::promptAndSaveRecord()
+{
+    int duration = 1000 - timeLeft;
+    int steps = moveCount;
+
+    bool ok;
+    QString username = QInputDialog::getText(this, "Enter your name",
+                                             "Player Name:", QLineEdit::Normal,
+                                             "", &ok);
+    if (ok && !username.isEmpty()) {
+        int playerId = dbManager->insertPlayer(username);
+        if (playerId == -1) {
+            // 用户名已存在，查询ID
+            QSqlQuery query;
+            query.prepare("SELECT player_id FROM players WHERE name = :name");
+            query.bindValue(":name", username);
+            query.exec();
+            if (query.next())
+                playerId = query.value(0).toInt();
+        }
+
+        // 插入成绩
+        dbManager->insertRecord(playerId, duration, steps);
     }
 }
 

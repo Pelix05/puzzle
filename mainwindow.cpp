@@ -1,43 +1,136 @@
+// mainwindow.cpp
 #include "mainwindow.h"
 #include "defaultpuzzlemenuwindow.h"
 #include "generatepuzzlemenuwindow.h"
+#include "databasemanager.h"
+#include "leaderboard.h"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPushButton>
-#include "puzzle/pieceslist.h"
-#include "puzzle/puzzlewidget.h"
-#include "bmp/bmp.h"
+#include <QLabel>
+#include <QFrame>
+#include <QSpacerItem>
+#include <QFont>
+#include <QStyle>
 
-#include <QtWidgets>
-#include <stdlib.h>
+// Implement the static background function
+void MainWindow::applyBackground(QWidget *widget, const QString &imagePath)
+{
+    widget->setStyleSheet(QString(
+                              "QWidget {"
+                              "background-image: url(:/images/background.jpg);"
+                              "background-position: center;"
+                              "background-repeat: no-repeat;"
+                              "background-size: cover;"
+                              "}"
+                              ).arg(imagePath));
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle(tr("Puzzle Game"));
+    setFixedSize(800, 600);
+
+    // Apply background
+    applyBackground(this);
 
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
 
-    QVBoxLayout *layout = new QVBoxLayout(central);
+    QVBoxLayout *mainLayout = new QVBoxLayout(central);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    QPushButton *defaultPuzzleBtn = new QPushButton("Puzzle Bawaan");
-    QPushButton *generatePuzzleBtn = new QPushButton("Generate Puzzle");
+    // Semi-transparent overlay
+    QFrame *overlay = new QFrame();
+    overlay->setStyleSheet("QFrame {"
+                           "background: rgba(0, 0, 0, 150);"
+                           "border: none;"
+                           "}");
 
-    layout->addWidget(defaultPuzzleBtn);
-    layout->addWidget(generatePuzzleBtn);
+    QVBoxLayout *overlayLayout = new QVBoxLayout(overlay);
+    overlayLayout->setSpacing(30);
+    overlayLayout->setContentsMargins(50, 50, 50, 50);
+
+    // Title
+    QLabel *titleLabel = new QLabel("PUZZLE GAME");
+    titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setStyleSheet("QLabel {"
+                              "color: white;"
+                              "font-size: 36px;"
+                              "font-weight: bold;"
+                              "text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"
+                              "}");
+    overlayLayout->addStretch();
+    overlayLayout->addWidget(titleLabel);
+
+    // Buttons
+    QPushButton *defaultPuzzleBtn = createGlassButton("Puzzle Bawaan");
+    QPushButton *generatePuzzleBtn = createGlassButton("Generate Puzzle");
+    QPushButton *leaderboardBtn = createGlassButton("leaderboard");
+
+    overlayLayout->addWidget(defaultPuzzleBtn);
+    overlayLayout->addWidget(generatePuzzleBtn);
+    overlayLayout->addWidget(leaderboardBtn);
+    overlayLayout->addStretch();
+
+    mainLayout->addWidget(overlay);
 
     connect(defaultPuzzleBtn, &QPushButton::clicked, this, &MainWindow::openDefaultPuzzleMenu);
     connect(generatePuzzleBtn, &QPushButton::clicked, this, &MainWindow::openGeneratePuzzleMenu);
+
+    // 初始化数据库和排行榜
+    Database *db = new Database();
+    db->initDatabase();
+    dbManager = new DatabaseManager(db);
+
+    Leaderboard *leaderboard = new Leaderboard(dbManager);
+    leaderboard->setWindowTitle("排行榜");
+    leaderboard->resize(500, 400);
+
+    connect(leaderboardBtn, &QPushButton::clicked, [=]() {
+        leaderboard->refresh(10); // 刷新 Top10
+        leaderboard->show();      // 显示排行榜窗口
+    });
+}
+
+QPushButton* MainWindow::createGlassButton(const QString &text)
+{
+    QPushButton *button = new QPushButton(text);
+    button->setFixedSize(250, 60);
+    button->setStyleSheet(
+        "QPushButton {"
+        "background: rgba(255, 255, 255, 100);"
+        "border: 2px solid rgba(255, 255, 255, 150);"
+        "border-radius: 15px;"
+        "color: white;"
+        "font-size: 16px;"
+        "font-weight: bold;"
+        "}"
+        "QPushButton:hover {"
+        "background: rgba(255, 255, 255, 150);"
+        "border: 2px solid rgba(255, 255, 255, 200);"
+        "}"
+        "QPushButton:pressed {"
+        "background: rgba(255, 255, 255, 200);"
+        "}"
+        );
+    button->setCursor(Qt::PointingHandCursor);
+    return button;
 }
 
 void MainWindow::openDefaultPuzzleMenu()
 {
-    auto *win = new DefaultPuzzleMenuWindow;
+    auto *win = new DefaultPuzzleMenuWindow(dbManager, this);
+    win->setAttribute(Qt::WA_DeleteOnClose);
+    MainWindow::applyBackground(win); // Apply same background
     win->show();
 }
 
 void MainWindow::openGeneratePuzzleMenu()
 {
-    auto *win = new GeneratePuzzleMenuWindow;
+    auto *win = new GeneratePuzzleMenuWindow(dbManager, this);
+    win->setAttribute(Qt::WA_DeleteOnClose);
+    MainWindow::applyBackground(win); // Apply same background
     win->show();
 }
