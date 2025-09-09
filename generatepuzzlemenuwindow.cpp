@@ -1,6 +1,7 @@
 #include "generatepuzzlemenuwindow.h"
 #include "mainwindowpuzzle.h"
 #include "mainwindow.h" // Add this include for the background function
+#include "databasemanager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -12,8 +13,8 @@
 #include <QGroupBox>
 
 
-GeneratePuzzleMenuWindow::GeneratePuzzleMenuWindow(QWidget *parent)
-    : QWidget(parent), gridSize(5), timerSeconds(300)
+GeneratePuzzleMenuWindow::GeneratePuzzleMenuWindow(DatabaseManager* db, QWidget *parent)
+    : QWidget(parent), dbManager(db) , gridSize(5), timerSeconds(300)
 {
     setWindowTitle("Generate Puzzle");
     setFixedSize(800, 600); // Set fixed size for consistency
@@ -205,7 +206,7 @@ void GeneratePuzzleMenuWindow::startCustomPuzzle()
         return;
     }
 
-    MainWindowPuzzle *win = new MainWindowPuzzle(selectedImagePath, selectedImagePath, gridSize, timerSeconds);
+    MainWindowPuzzle *win = new MainWindowPuzzle(selectedImagePath, selectedImagePath, gridSize, timerSeconds, dbManager, this);
     win->setAttribute(Qt::WA_DeleteOnClose);
     MainWindow::applyBackground(win); // Apply same background to puzzle window
     win->show();

@@ -7,12 +7,13 @@
 #include <QTimer>
 #include "puzzle/pieceslist.h"
 #include "puzzle/puzzlewidget.h"
+#include "databasemanager.h"
 
 class MainWindowPuzzle : public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int gridSize, int timerSeconds, QWidget *parent = nullptr);
+    MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int gridSize, int timerSeconds,  DatabaseManager *dbManager, QWidget *parent = nullptr);
 
 
 struct Move {
@@ -32,6 +33,7 @@ private:
     void loadImage(const QString &fileName, const QString &grey_fileName);
     void setupPuzzle();
     void setupWidgets();
+    void promptAndSaveRecord();
 
     QPixmap puzzleImage;
     QLabel *greyImage;
@@ -41,6 +43,9 @@ private:
     QTimer *timer;
     int timeLeft;
     int gridSize;
+
+    DatabaseManager *dbManager;
+    int moveCount;
 };
 
 

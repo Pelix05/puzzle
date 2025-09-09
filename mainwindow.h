@@ -2,6 +2,7 @@
 #pragma once
 #include <QMainWindow>
 #include <QPushButton>
+#include "databasemanager.h"
 
 class MainWindow : public QMainWindow
 {
@@ -18,4 +19,5 @@ private slots:
 
 private:
     QPushButton* createGlassButton(const QString &text);
+    DatabaseManager *dbManager;
 };

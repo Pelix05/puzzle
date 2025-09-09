@@ -2,6 +2,8 @@
 #include "mainwindow.h"
 #include "defaultpuzzlemenuwindow.h"
 #include "generatepuzzlemenuwindow.h"
+#include "databasemanager.h"
+#include "leaderboard.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -65,15 +67,31 @@ MainWindow::MainWindow(QWidget *parent)
     // Buttons
     QPushButton *defaultPuzzleBtn = createGlassButton("Puzzle Bawaan");
     QPushButton *generatePuzzleBtn = createGlassButton("Generate Puzzle");
+    QPushButton *leaderboardBtn = createGlassButton("leaderboard");
 
     overlayLayout->addWidget(defaultPuzzleBtn);
     overlayLayout->addWidget(generatePuzzleBtn);
+    overlayLayout->addWidget(leaderboardBtn);
     overlayLayout->addStretch();
 
     mainLayout->addWidget(overlay);
 
     connect(defaultPuzzleBtn, &QPushButton::clicked, this, &MainWindow::openDefaultPuzzleMenu);
     connect(generatePuzzleBtn, &QPushButton::clicked, this, &MainWindow::openGeneratePuzzleMenu);
+
+    // 初始化数据库和排行榜
+    Database *db = new Database();
+    db->initDatabase();
+    dbManager = new DatabaseManager(db);
+
+    Leaderboard *leaderboard = new Leaderboard(dbManager);
+    leaderboard->setWindowTitle("排行榜");
+    leaderboard->resize(500, 400);
+
+    connect(leaderboardBtn, &QPushButton::clicked, [=]() {
+        leaderboard->refresh(10); // 刷新 Top10
+        leaderboard->show();      // 显示排行榜窗口
+    });
 }
 
 QPushButton* MainWindow::createGlassButton(const QString &text)
@@ -103,7 +121,7 @@ QPushButton* MainWindow::createGlassButton(const QString &text)
 
 void MainWindow::openDefaultPuzzleMenu()
 {
-    auto *win = new DefaultPuzzleMenuWindow;
+    auto *win = new DefaultPuzzleMenuWindow(dbManager, this);
     win->setAttribute(Qt::WA_DeleteOnClose);
     MainWindow::applyBackground(win); // Apply same background
     win->show();
@@ -111,7 +129,7 @@ void MainWindow::openDefaultPuzzleMenu()
 
 void MainWindow::openGeneratePuzzleMenu()
 {
-    auto *win = new GeneratePuzzleMenuWindow;
+    auto *win = new GeneratePuzzleMenuWindow(dbManager, this);
     win->setAttribute(Qt::WA_DeleteOnClose);
     MainWindow::applyBackground(win); // Apply same background
     win->show();
