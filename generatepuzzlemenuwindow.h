@@ -3,6 +3,8 @@
 
 #pragma once
 #include <QWidget>
+#include <QLabel>
+
 
 class GeneratePuzzleMenuWindow : public QWidget
 {
@@ -18,6 +20,7 @@ private:
     QString selectedImagePath;
     int gridSize;
     int timerSeconds;
+    QLabel *imagePreview;
 };
 
 

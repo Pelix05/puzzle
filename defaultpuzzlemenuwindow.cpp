@@ -6,21 +6,27 @@
 DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(QWidget *parent)
     : QWidget(parent)
 {
-    setWindowTitle("Pilih Level Puzzle");
+    setWindowTitle("Choose level you want to play");
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    QPushButton *btn3x3 = new QPushButton("Level 3x3");
-    QPushButton *btn5x5 = new QPushButton("Level 5x5");
-    QPushButton *btn7x7 = new QPushButton("Level 7x7");
+    QPushButton *btn3x3 = new QPushButton("Level 1");
+    QPushButton *btn5x5 = new QPushButton("Level 2");
+    QPushButton *btn7x7 = new QPushButton("Level 3");
+    QPushButton *backBtn = new QPushButton("Back");
+
+
 
     layout->addWidget(btn3x3);
     layout->addWidget(btn5x5);
     layout->addWidget(btn7x7);
+    layout->addWidget(backBtn);
 
     connect(btn3x3, &QPushButton::clicked, this, &DefaultPuzzleMenuWindow::startPuzzle3x3);
     connect(btn5x5, &QPushButton::clicked, this, &DefaultPuzzleMenuWindow::startPuzzle5x5);
     connect(btn7x7, &QPushButton::clicked, this, &DefaultPuzzleMenuWindow::startPuzzle7x7);
+    connect(backBtn, &QPushButton::clicked, this, &DefaultPuzzleMenuWindow::close);
+
 }
 
 void DefaultPuzzleMenuWindow::startPuzzle3x3()

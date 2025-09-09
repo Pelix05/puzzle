@@ -15,6 +15,7 @@ MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &grey
 
     timerLabel = new QLabel(QString("Time: %1 s").arg(timeLeft));
     timer = new QTimer(this);
+
     connect(timer, &QTimer::timeout, this, &MainWindowPuzzle::updateTimer);
     connect(puzzleWidget, &PuzzleWidget::puzzleCompleted,
             this, &MainWindowPuzzle::setCompleted);
@@ -36,6 +37,11 @@ void MainWindowPuzzle::setupWidgets()
     QHBoxLayout *frameLayout = new QHBoxLayout(frame);
 
     QVBoxLayout *leftLayout = new QVBoxLayout;
+
+    QPushButton *backBtn = new QPushButton("Back");
+    connect(backBtn, &QPushButton::clicked, this, &MainWindowPuzzle::close);
+    leftLayout->addWidget(backBtn);
+
     leftLayout->addWidget(greyImage);
     leftLayout->addWidget(piecesList);
     leftLayout->addWidget(timerLabel);
@@ -58,9 +64,10 @@ void MainWindowPuzzle::loadImage(const QString &fileName, const QString &grey_fi
     if(!newImage.load(fileName)) return;
     puzzleImage = newImage;
 
-    QPixmap greyPix;
-    if(!greyPix.load(grey_fileName)) return;
-    greyPix = greyPix.scaled(QSize(100,100), Qt::KeepAspectRatio);
+    QImage greyImg = newImage.toImage().convertToFormat(QImage::Format_Grayscale8);
+    QPixmap greyPix = QPixmap::fromImage(greyImg);
+
+    greyPix = greyPix.scaled(QSize(100,100), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     greyImage->setPixmap(greyPix);
 
     setupPuzzle();

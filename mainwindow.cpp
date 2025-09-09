@@ -15,21 +15,17 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setWindowTitle(tr("Puzzle Game"));
 
-    // ✅ Buat central widget
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
 
-    // ✅ Layout vertical untuk tombol
     QVBoxLayout *layout = new QVBoxLayout(central);
 
-    // ✅ Tombol menu
     QPushButton *defaultPuzzleBtn = new QPushButton("Puzzle Bawaan");
     QPushButton *generatePuzzleBtn = new QPushButton("Generate Puzzle");
 
     layout->addWidget(defaultPuzzleBtn);
     layout->addWidget(generatePuzzleBtn);
 
-    // ✅ Connect tombol ke slot
     connect(defaultPuzzleBtn, &QPushButton::clicked, this, &MainWindow::openDefaultPuzzleMenu);
     connect(generatePuzzleBtn, &QPushButton::clicked, this, &MainWindow::openGeneratePuzzleMenu);
 }
