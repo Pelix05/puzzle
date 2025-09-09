@@ -1,3 +1,4 @@
+// mainwindow.cpp
 #include "mainwindow.h"
 #include "defaultpuzzlemenuwindow.h"
 #include "generatepuzzlemenuwindow.h"
@@ -10,20 +11,29 @@
 #include <QFont>
 #include <QStyle>
 
+// Implement the static background function
+void MainWindow::applyBackground(QWidget *widget, const QString &imagePath)
+{
+    widget->setStyleSheet(QString(
+                              "QWidget {"
+                              "background-image: url(:/images/background.jpg);"
+                              "background-position: center;"
+                              "background-repeat: no-repeat;"
+                              "background-size: cover;"
+                              "}"
+                              ).arg(imagePath));
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle(tr("Puzzle Game"));
     setFixedSize(800, 600);
 
-    // Set background image
+    // Apply background
+    applyBackground(this);
+
     QWidget *central = new QWidget(this);
-    central->setStyleSheet("QWidget {"
-                           "background-image: url(:/images/background.jpg);"
-                           "background-position: center;"
-                           "background-repeat: no-repeat;"
-                           "background-size: cover;"
-                           "}");
     setCentralWidget(central);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(central);
@@ -41,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     overlayLayout->setContentsMargins(50, 50, 50, 50);
 
     // Title
-    QLabel *titleLabel = new QLabel("拼图游戏");
+    QLabel *titleLabel = new QLabel("PUZZLE GAME");
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setStyleSheet("QLabel {"
                               "color: white;"
@@ -53,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
     overlayLayout->addWidget(titleLabel);
 
     // Buttons
-    QPushButton *defaultPuzzleBtn = createGlassButton("Start Puzzle ");
+    QPushButton *defaultPuzzleBtn = createGlassButton("Puzzle Bawaan");
     QPushButton *generatePuzzleBtn = createGlassButton("Generate Puzzle");
 
     overlayLayout->addWidget(defaultPuzzleBtn);
@@ -95,6 +105,7 @@ void MainWindow::openDefaultPuzzleMenu()
 {
     auto *win = new DefaultPuzzleMenuWindow;
     win->setAttribute(Qt::WA_DeleteOnClose);
+    MainWindow::applyBackground(win); // Apply same background
     win->show();
 }
 
@@ -102,5 +113,6 @@ void MainWindow::openGeneratePuzzleMenu()
 {
     auto *win = new GeneratePuzzleMenuWindow;
     win->setAttribute(Qt::WA_DeleteOnClose);
+    MainWindow::applyBackground(win); // Apply same background
     win->show();
 }

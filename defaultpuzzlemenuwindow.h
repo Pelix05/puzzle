@@ -16,5 +16,4 @@ private slots:
     void startPuzzle7x7();
 };
 
-
 #endif // DEFAULTPUZZLEMENUWINDOW_H
