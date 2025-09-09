@@ -17,14 +17,18 @@ class PuzzleWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit PuzzleWidget(int imageSize, QWidget *parent = nullptr);
+    explicit PuzzleWidget(int imageSize, int gridSize, QWidget *parent = nullptr);
     void clear();
 
     int pieceSize() const;
     int imageSize() const;
+    void setGridSize(int grid);
+    int gridSize() const { return m_GridSize; }
+     void removePiece(const QRect &rect);
 
 signals:
     void puzzleCompleted();
+    void piecePlaced(QPixmap pixmap, QPoint location, QRect rect);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -48,6 +52,7 @@ private:
     QRect highlightedRect;
     int inPlace;
     int m_ImageSize;
+    int m_GridSize;
 };
 
 #endif // PUZZLEWIDGET_H

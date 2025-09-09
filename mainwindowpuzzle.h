@@ -14,9 +14,19 @@ class MainWindowPuzzle : public QMainWindow
 public:
     MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int gridSize, int timerSeconds, QWidget *parent = nullptr);
 
+
+struct Move {
+        QPixmap pixmap;
+        QPoint location;
+        QRect rect;
+    };
+    QVector<Move> moveHistory;
+
 private slots:
     void setCompleted();
     void updateTimer();
+    void resetPuzzle();
+    void undoMove();
 
 private:
     void loadImage(const QString &fileName, const QString &grey_fileName);

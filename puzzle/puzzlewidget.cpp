@@ -6,8 +6,8 @@
 #include <QMimeData>
 #include <QPainter>
 
-PuzzleWidget::PuzzleWidget(int imageSize, QWidget *parent)
-    : QWidget(parent), m_ImageSize(imageSize)
+PuzzleWidget::PuzzleWidget(int imageSize, int gridSize, QWidget *parent)
+    : QWidget(parent),m_ImageSize(imageSize), m_GridSize(gridSize)
 {
     setAcceptDrops(true);
     setMinimumSize(m_ImageSize, m_ImageSize);
@@ -38,6 +38,13 @@ void PuzzleWidget::dragLeaveEvent(QDragLeaveEvent *event)
     event->accept();
 }
 
+void PuzzleWidget::setGridSize(int grid)
+{
+    m_GridSize = grid;
+    clear(); // reset papan puzzle
+}
+
+
 void PuzzleWidget::dragMoveEvent(QDragMoveEvent *event)
 {
     QRect updateRect = highlightedRect.united(targetSquare(event->pos()));
@@ -56,6 +63,16 @@ void PuzzleWidget::dragMoveEvent(QDragMoveEvent *event)
     update(updateRect);
 }
 
+void PuzzleWidget::removePiece(const QRect &rect)
+{
+    int idx = findPiece(rect);
+    if (idx != -1) {
+        pieces.removeAt(idx);
+        update(rect);
+    }
+}
+
+
 void PuzzleWidget::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasFormat(PiecesList::puzzleMimeType())
@@ -68,6 +85,7 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
         dataStream >> piece.pixmap >> piece.location;
 
         pieces.append(piece);
+        emit piecePlaced(piece.pixmap, piece.location, piece.rect);
 
         highlightedRect = QRect();
         update(piece.rect);
@@ -77,7 +95,7 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
 
         if (piece.location == piece.rect.topLeft() / pieceSize()) {
             inPlace++;
-            if (inPlace == 25)
+            if (inPlace == m_GridSize * m_GridSize)   // ✅ fleksibel
                 emit puzzleCompleted();
         }
     } else {
@@ -155,7 +173,7 @@ const QRect PuzzleWidget::targetSquare(const QPoint &position) const
 
 int PuzzleWidget::pieceSize() const
 {
-    return m_ImageSize / 5;
+    return m_ImageSize / m_GridSize;
 }
 
 int PuzzleWidget::imageSize() const

@@ -3,17 +3,27 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QPixmap>
+#include <QPushButton>
+
 
 MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int grid, int timerSeconds, QWidget *parent)
     : QMainWindow(parent), gridSize(grid), timeLeft(timerSeconds)
 {
-    puzzleWidget = new PuzzleWidget(400);
+    puzzleWidget = new PuzzleWidget(400, gridSize, this);
     piecesList = new PiecesList(puzzleWidget->width(), this);
     greyImage = new QLabel;
 
     timerLabel = new QLabel(QString("Time: %1 s").arg(timeLeft));
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindowPuzzle::updateTimer);
+    connect(puzzleWidget, &PuzzleWidget::puzzleCompleted,
+            this, &MainWindowPuzzle::setCompleted);
+    connect(puzzleWidget, &PuzzleWidget::piecePlaced, this,
+            [this](QPixmap pix, QPoint loc, QRect rect){
+                moveHistory.append({pix, loc, rect});
+            });
+
+
     timer->start(1000);
 
     setupWidgets();
@@ -29,6 +39,13 @@ void MainWindowPuzzle::setupWidgets()
     leftLayout->addWidget(greyImage);
     leftLayout->addWidget(piecesList);
     leftLayout->addWidget(timerLabel);
+
+    QPushButton *resetButton = new QPushButton("Reset");
+    QPushButton *undoButton = new QPushButton("Undo");
+    connect(resetButton, &QPushButton::clicked, this, &MainWindowPuzzle::resetPuzzle);
+    connect(undoButton, &QPushButton::clicked, this, &MainWindowPuzzle::undoMove);
+    leftLayout->addWidget(resetButton);
+    leftLayout->addWidget(undoButton);
 
     frameLayout->addLayout(leftLayout);
     frameLayout->addWidget(puzzleWidget);
@@ -48,6 +65,29 @@ void MainWindowPuzzle::loadImage(const QString &fileName, const QString &grey_fi
 
     setupPuzzle();
 }
+
+void MainWindowPuzzle::resetPuzzle()
+{
+    setupPuzzle();  // ✅ reload awal
+    moveHistory.clear();
+}
+
+void MainWindowPuzzle::undoMove()
+{
+    if (moveHistory.isEmpty())
+        return;
+
+    Move last = moveHistory.takeLast();
+
+    // Hapus dari puzzleWidget
+    puzzleWidget->removePiece(last.rect);
+
+    // Balik ke piecesList
+    piecesList->addPiece(last.pixmap, last.location);
+
+    puzzleWidget->update();
+}
+
 
 void MainWindowPuzzle::setupPuzzle()
 {
