@@ -1,5 +1,6 @@
-// mainwindow.h
-#pragma once
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
 #include <QMainWindow>
 #include <QPushButton>
 #include "databasemanager.h"
@@ -7,17 +8,19 @@
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-
-    // Add this static function
-    static void applyBackground(QWidget *widget, const QString &imagePath = ":/images/background.png");
-
-private slots:
-    void openDefaultPuzzleMenu();
-    void openGeneratePuzzleMenu();
+    static void applyBackground(QWidget *widget, const QString &imagePath = ":/images/background.jpg");
 
 private:
-    QPushButton* createGlassButton(const QString &text);
     DatabaseManager *dbManager;
+
+    QPushButton* createGlassButton(const QString &text);
+
+    // Add these declarations:
+    void openDefaultPuzzleMenu();
+    void openGeneratePuzzleMenu();
 };
+
+#endif // MAINWINDOW_H
