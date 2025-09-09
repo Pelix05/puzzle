@@ -47,10 +47,15 @@ MainWindow::MainWindow(QWidget *parent)
     QFrame *overlay = new QFrame();
     overlay->setStyleSheet(
         "QFrame {"
-        "background: rgba(0, 0, 0, 150);"
+        "background-image: url(:/images/background.png);"
+        "background-position: center;"
+        "background-repeat: no-repeat;"
+        "background-size: cover;"
+        "background-color: rgba(0,0,0,150);"
         "border: none;"
         "}"
         );
+
 
     QVBoxLayout *overlayLayout = new QVBoxLayout(overlay);
     overlayLayout->setSpacing(30);
