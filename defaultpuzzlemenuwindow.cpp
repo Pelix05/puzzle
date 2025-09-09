@@ -1,6 +1,7 @@
 #include "defaultpuzzlemenuwindow.h"
 #include "mainwindowpuzzle.h"
 #include "mainwindow.h" // For background function
+#include "databasemanager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -8,8 +9,8 @@
 #include <QFrame>
 #include <QSpacerItem>
 
-DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(QWidget *parent)
-    : QWidget(parent)
+DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(DatabaseManager *db, QWidget *parent)
+    : QWidget(parent), dbManager(db)
 {
     setWindowTitle("Choose Level");
     setFixedSize(1700, 1000);
@@ -146,18 +147,18 @@ DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(QWidget *parent)
 // KEEP THE ORIGINAL PUZZLE LOGIC EXACTLY AS IT WAS
 void DefaultPuzzleMenuWindow::startPuzzle3x3()
 {
-    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 3, 300);
+    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 3, 300, dbManager, this);
     win->show();
 }
 
 void DefaultPuzzleMenuWindow::startPuzzle5x5()
 {
-    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 5, 300);
+    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 5, 300, dbManager, this);
     win->show();
 }
 
 void DefaultPuzzleMenuWindow::startPuzzle7x7()
 {
-    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 7, 300);
+    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 7, 300, dbManager, this);
     win->show();
 }

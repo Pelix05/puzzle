@@ -2,18 +2,24 @@
 #define DEFAULTPUZZLEMENUWINDOW_H
 
 #pragma once
+#include"databasemanager.h"
 #include <QWidget>
 
 class DefaultPuzzleMenuWindow : public QWidget
 {
     Q_OBJECT
 public:
-    explicit DefaultPuzzleMenuWindow(QWidget *parent = nullptr);
+    explicit DefaultPuzzleMenuWindow(DatabaseManager *db, QWidget *parent = nullptr);
 
 private slots:
     void startPuzzle3x3();
     void startPuzzle5x5();
     void startPuzzle7x7();
+
+private :
+    DatabaseManager *dbManager;
 };
+
+
 
 #endif // DEFAULTPUZZLEMENUWINDOW_H
