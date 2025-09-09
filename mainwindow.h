@@ -16,7 +16,7 @@ public:
 private:
     DatabaseManager *dbManager;
 
-    QPushButton* createGlassButton(const QString &text);
+    QPushButton* createGlassButton(const QString &text, int width, int height, int fontSize);
 
     // Add these declarations:
     void openDefaultPuzzleMenu();
