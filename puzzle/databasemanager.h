@@ -12,6 +12,7 @@ struct Record {
     QString playerName;
     int duration;
     int steps;
+    int level;
     QString createdAt;
 };
 
@@ -21,8 +22,8 @@ public:
     DatabaseManager(Database *db); // 依赖数据库模块
     bool playerExists(const QString &name);
     int insertPlayer(const QString &name);
-    void insertRecord(int playerId, int duration, int steps);
-    QList<Record> getTopRecords(int limit = 10);
+    void insertRecord(int playerId, int duration, int steps, int level);
+    QList<Record> getTopRecords(int level, int limit = 10);
 
 private:
     Database *m_database;

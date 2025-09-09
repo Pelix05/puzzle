@@ -7,7 +7,7 @@
 #include <QTimer>
 #include "puzzle/pieceslist.h"
 #include "puzzle/puzzlewidget.h"
-#include "databasemanager.h"
+#include "puzzle/databasemanager.h"
 
 class MainWindowPuzzle : public QMainWindow
 {
@@ -16,7 +16,7 @@ public:
     MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int gridSize, int timerSeconds,  DatabaseManager *dbManager, QWidget *parent = nullptr);
 
 
-struct Move {
+    struct Move {
         QPixmap pixmap;
         QPoint location;
         QRect rect;
@@ -46,6 +46,7 @@ private:
 
     DatabaseManager *dbManager;
     int moveCount;
+    int level;
 };
 
 

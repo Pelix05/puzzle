@@ -31,17 +31,34 @@ void Leaderboard::clearLayout()
     }
 }
 
-void Leaderboard::refresh(int topN)
+void Leaderboard::refresh()
 {
     clearLayout();
-    QList<Record> topRecords = m_dbManager->getTopRecords(topN);
+    // 三个等级排行榜
+    QList<Record> easyRecords   = m_dbManager->getTopRecords(1);
+    QList<Record> normalRecords = m_dbManager->getTopRecords(2);
+    QList<Record> hardRecords   = m_dbManager->getTopRecords(3);
+
+    addCategory("简单模式", easyRecords, "#C8E6C9");  // 绿色背景
+    addCategory("中等模式", normalRecords, "#FFE0B2"); // 橙色背景
+    addCategory("困难模式", hardRecords, "#FFCDD2");   // 红色背景
+
+    m_layout->addStretch();
+}
+
+void Leaderboard::addCategory(const QString &title, const QList<Record> &records, const QString &color)
+{
+    // 分类标题
+    QLabel *titleLabel = new QLabel(title);
+    titleLabel->setStyleSheet("font-weight: bold; font-size: 18px; margin: 10px;");
+    m_layout->addWidget(titleLabel);
 
     int rank = 1;
-    for (const Record &r : topRecords) {
+    for (const Record &r : records) {
         QFrame *card = new QFrame;
         card->setFrameShape(QFrame::Box);
         card->setLineWidth(2);
-        card->setStyleSheet("background-color: #E0E0E0; border-radius: 8px;");
+        card->setStyleSheet(QString("background-color: %1; border-radius: 8px;").arg(color));
         card->setFixedHeight(60);
 
         QHBoxLayout *cardLayout = new QHBoxLayout(card);
@@ -61,6 +78,5 @@ void Leaderboard::refresh(int topN)
         m_layout->addWidget(card);
         rank++;
     }
-
-    m_layout->addStretch();
 }
+

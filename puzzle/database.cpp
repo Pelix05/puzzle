@@ -36,6 +36,7 @@ bool Database::initDatabase()
                     "player_id INTEGER NOT NULL,"
                     "duration INTEGER NOT NULL,"
                     "steps INTEGER,"
+                    "level INTEGER NOT NULL,"
                     "created_at DATETIME DEFAULT CURRENT_TIMESTAMP,"
                     "FOREIGN KEY(player_id) REFERENCES players(player_id))")) {
         qDebug() << "Create records table failed:" << query.lastError().text();

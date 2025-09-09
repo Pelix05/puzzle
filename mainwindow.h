@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QPushButton>
-#include "databasemanager.h"
+#include "puzzle/databasemanager.h"
 
 class MainWindow : public QMainWindow
 {
@@ -16,7 +16,7 @@ public:
 private:
     DatabaseManager *dbManager;
 
-    QPushButton* createGlassButton(const QString &text, int width, int height, int fontSize);
+    QPushButton* createGlassButton(const QString &text);
 
     // Add these declarations:
     void openDefaultPuzzleMenu();
