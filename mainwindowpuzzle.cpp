@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QPixmap>
 #include <QPushButton>
+#include <QRandomGenerator>
 
 
 MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int grid, int timerSeconds, QWidget *parent)
@@ -117,7 +118,6 @@ void MainWindowPuzzle::setupPuzzle()
             piecesList->addPiece(pieceImage, QPoint(x, y));
         }
 
-    puzzleWidget->clear();
 }
 
 void MainWindowPuzzle::setCompleted()
