@@ -9,7 +9,7 @@ class DefaultPuzzleMenuWindow : public QWidget
 {
     Q_OBJECT
 public:
-    explicit DefaultPuzzleMenuWindow(DatabaseManager *db, QWidget *parent = nullptr);
+    explicit DefaultPuzzleMenuWindow(DatabaseManager *db);
 
 private slots:
     void startPuzzle3x3();

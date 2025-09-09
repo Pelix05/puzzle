@@ -9,7 +9,7 @@ class PiecesList : public QListWidget
 
 public:
     explicit PiecesList(int pieceSize, QWidget *parent = nullptr);
-    void addPiece(const QPixmap &pixmap, const QPoint &location);
+    void addPiece(const QPixmap &pixmap, const QPoint &location, int rotation = 0);
 
     static QString puzzleMimeType() { return QStringLiteral("image/x-puzzle-piece"); }
 

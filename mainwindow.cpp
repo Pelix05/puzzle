@@ -15,6 +15,7 @@
 
 void MainWindow::applyBackground(QWidget *widget, const QString &imagePath)
 {
+<<<<<<< HEAD
     Q_UNUSED(imagePath); // Add this line to avoid unused parameter warning
 
     widget->setStyleSheet(
@@ -27,11 +28,31 @@ void MainWindow::applyBackground(QWidget *widget, const QString &imagePath)
         );
 }
 // mainwindow.cpp - in the constructor
+=======
+    widget->setAutoFillBackground(true);
+    widget->setStyleSheet(QString(
+                              "QWidget {"
+                              "background-image: url(%1);"
+                              "background-position: center;"
+                              "background-repeat: no-repeat;"
+                              "}"
+                              ).arg(imagePath));
+}
+
+
+>>>>>>> 2c07341872ce0e5f0f8c6eff37e310aa57617a6e
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle(tr("Puzzle Game"));
+<<<<<<< HEAD
     setFixedSize(1000, 700);
+=======
+    setFixedSize(800, 600);
+
+    // Apply background
+    applyBackground(this,":/images/background.jpg");
+>>>>>>> 2c07341872ce0e5f0f8c6eff37e310aa57617a6e
 
     // Set background image
     QWidget *central = new QWidget(this);
@@ -135,15 +156,23 @@ QPushButton* MainWindow::createGlassButton(const QString &text)
 
 void MainWindow::openDefaultPuzzleMenu()
 {
+<<<<<<< HEAD
     auto *win = new DefaultPuzzleMenuWindow(dbManager, nullptr);  // ← Change to nullptr
+=======
+    auto *win = new DefaultPuzzleMenuWindow(dbManager);
+>>>>>>> 2c07341872ce0e5f0f8c6eff37e310aa57617a6e
     win->setAttribute(Qt::WA_DeleteOnClose);
-    MainWindow::applyBackground(win); // Apply same background
+    MainWindow::applyBackground(win, ":/images/background.jpg"); // Apply same background
     win->show();
 }
 
 void MainWindow::openGeneratePuzzleMenu()
 {
+<<<<<<< HEAD
     auto *win = new GeneratePuzzleMenuWindow(dbManager, nullptr); // ← Change 'this' to 'nullptr'
+=======
+    auto *win = new GeneratePuzzleMenuWindow(dbManager);
+>>>>>>> 2c07341872ce0e5f0f8c6eff37e310aa57617a6e
     win->setAttribute(Qt::WA_DeleteOnClose);
     MainWindow::applyBackground(win); // Apply same background
     win->show();

@@ -13,8 +13,8 @@
 #include <QGroupBox>
 
 
-GeneratePuzzleMenuWindow::GeneratePuzzleMenuWindow(DatabaseManager* db, QWidget *parent)
-    : QWidget(parent), dbManager(db) , gridSize(5), timerSeconds(300)
+GeneratePuzzleMenuWindow::GeneratePuzzleMenuWindow(DatabaseManager* db)
+    :dbManager(db) , gridSize(5), timerSeconds(300)
 {
     setWindowTitle("Generate Puzzle");
     setFixedSize(800, 600); // Set fixed size for consistency

@@ -51,14 +51,20 @@ void PiecesList::dropEvent(QDropEvent *event)
     }
 }
 
-void PiecesList::addPiece(const QPixmap &pixmap, const QPoint &location)
+void PiecesList::addPiece(const QPixmap &pixmap, const QPoint &location, int rotation)
 {
     QListWidgetItem *pieceItem = new QListWidgetItem(this);
-    pieceItem->setIcon(QIcon(pixmap));
+    QPixmap rotated = pixmap.transformed(QTransform().rotate(rotation), Qt::SmoothTransformation);
+    pieceItem->setIcon(QIcon(rotated));
     pieceItem->setData(Qt::UserRole, QVariant(pixmap));
     pieceItem->setData(Qt::UserRole+1, location);
+    pieceItem->setData(Qt::UserRole+2, rotation);
     pieceItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
+    qDebug() << "[PiecesList] Piece at" << location << "rotation =" << rotation;
+
 }
+
+
 
 void PiecesList::startDrag(Qt::DropActions /*supportedActions*/)
 {
@@ -68,8 +74,9 @@ void PiecesList::startDrag(Qt::DropActions /*supportedActions*/)
     QDataStream dataStream(&itemData, QIODevice::WriteOnly);
     QPixmap pixmap = qvariant_cast<QPixmap>(item->data(Qt::UserRole));
     QPoint location = item->data(Qt::UserRole+1).toPoint();
+    int rotation = item->data(Qt::UserRole+2).toInt();
 
-    dataStream << pixmap << location;
+    dataStream << pixmap << location << rotation;
 
     QMimeData *mimeData = new QMimeData;
     mimeData->setData(PiecesList::puzzleMimeType(), itemData);
@@ -77,7 +84,7 @@ void PiecesList::startDrag(Qt::DropActions /*supportedActions*/)
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);
     drag->setHotSpot(QPoint(pixmap.width()/2, pixmap.height()/2));
-    drag->setPixmap(pixmap);
+    drag->setPixmap(pixmap.transformed(QTransform().rotate(rotation), Qt::SmoothTransformation));
 
     if (drag->exec(Qt::MoveAction) == Qt::MoveAction)
         delete takeItem(row(item));
