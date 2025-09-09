@@ -76,8 +76,11 @@ void MainWindowPuzzle::loadImage(const QString &fileName, const QString &grey_fi
 
 void MainWindowPuzzle::resetPuzzle()
 {
-    setupPuzzle();  // ✅ reload awal
+    puzzleWidget->clear();
+
     moveHistory.clear();
+
+    setupPuzzle();
 }
 
 void MainWindowPuzzle::undoMove()
@@ -111,14 +114,17 @@ void MainWindowPuzzle::setupPuzzle()
 
     int pieceSize = puzzleWidget->width() / gridSize;
 
+    int rotations[4] = {0, 90, 180, 270};
+
     for(int y = 0; y < gridSize; ++y)
         for(int x = 0; x < gridSize; ++x)
         {
             QPixmap pieceImage = puzzleImage.copy(x*pieceSize, y*pieceSize, pieceSize, pieceSize);
-            piecesList->addPiece(pieceImage, QPoint(x, y));
+            int rot = rotations[QRandomGenerator::global()->bounded(4)];
+            piecesList->addPiece(pieceImage, QPoint(x, y), rot);
         }
-
 }
+
 
 void MainWindowPuzzle::setCompleted()
 {

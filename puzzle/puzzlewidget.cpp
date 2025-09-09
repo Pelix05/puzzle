@@ -51,28 +51,33 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
         return;
     }
 
+    // Baca data dari PiecesList
     QByteArray pieceData = event->mimeData()->data(PiecesList::puzzleMimeType());
     QDataStream dataStream(&pieceData, QIODevice::ReadOnly);
     QPixmap pixmap;
-    QPoint location; // ini adalah lokasi grid yang benar dari piece
-    dataStream >> pixmap >> location;
+    QPoint location; // posisi grid yang benar
+    int rotation;
+    dataStream >> pixmap >> location >> rotation;
 
-    QRect correctRect(location * pieceSize(), QSize(pieceSize(), pieceSize()));
+    // Tentukan kotak puzzle sesuai posisi mouse drop
+    QPoint dropPos = event->pos();
+    QRect targetRect = targetSquare(dropPos);
 
-    // kalau di posisi correctRect sudah ada piece → tolak
-    if (findPiece(correctRect) != -1)
+    // Kalau kotak itu sudah ada piece, tolak drop
+    if (findPiece(targetRect) != -1)
     {
         highlightedRect = QRect();
         event->ignore();
         return;
     }
 
+    // Tambahkan piece ke puzzleWidget
     Piece piece;
-    piece.pixmap = pixmap;
-    piece.original = pixmap;
-    piece.rotation = 0;
-    piece.location = location;
-    piece.rect = correctRect;
+    piece.original = pixmap; // simpan original 0°
+    piece.rotation = rotation;
+    piece.pixmap = pixmap.transformed(QTransform().rotate(rotation), Qt::SmoothTransformation);
+    piece.rect = targetRect;  // posisi di puzzleWidget
+    piece.location = location; // posisi grid asli (untuk checkCompletion)
 
     pieces.append(piece);
     emit piecePlaced(piece.pixmap, piece.location, piece.rect);
@@ -82,9 +87,17 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
 
     event->setDropAction(Qt::MoveAction);
     event->accept();
+    qDebug() << "[PuzzleWidget] Dropped piece at mouse pos" << dropPos
+             << "targetRect =" << targetRect
+             << "original location =" << location
+             << "rotation =" << rotation;
 
+
+    // Cek apakah puzzle sudah selesai
     checkCompletion();
 }
+
+
 
 
 int PuzzleWidget::findPiece(const QRect &pieceRect) const
@@ -94,28 +107,35 @@ int PuzzleWidget::findPiece(const QRect &pieceRect) const
             return i;
     return -1;
 }
-
 void PuzzleWidget::checkCompletion()
 {
     if (pieces.size() != m_GridSize * m_GridSize)
         return; // belum semua kepasang
 
+    bool allCorrect = true;
+
     for (const Piece &p : pieces) {
-        QRect correctRect(p.location * pieceSize(),
-                          QSize(pieceSize(), pieceSize()));
+        QRect correctRect(p.location * pieceSize(), QSize(pieceSize(), pieceSize()));
+        bool posOk = (p.rect == correctRect);
+        bool rotOk = (p.rotation == 0);
 
-        // Posisi harus sesuai
-        if (p.rect != correctRect)
-            return;
+        qDebug() << "[CheckCompletion] Piece at" << p.location
+                 << "rect =" << p.rect
+                 << "correctRect =" << correctRect
+                 << "rotation =" << p.rotation
+                 << "posOk =" << posOk
+                 << "rotOk =" << rotOk;
 
-        // Rotasi harus kembali 0°
-        if (p.rotation != 0)
-            return;
+        if (!posOk || !rotOk)
+            allCorrect = false;
     }
 
-    // ✅ Semua sudah benar
-    emit puzzleCompleted();
+    if (allCorrect) {
+        qDebug() << "[PuzzleWidget] Puzzle completed!";
+        emit puzzleCompleted();
+    }
 }
+
 
 
 
@@ -148,6 +168,12 @@ void PuzzleWidget::removePiece(const QRect &rect)
         update(rect);
     }
 }
+void PuzzleWidget::clear()
+{
+    pieces.clear();
+    highlightedRect = QRect();
+    update();
+}
 
 
 void PuzzleWidget::mouseMoveEvent(QMouseEvent *event)
@@ -164,7 +190,8 @@ void PuzzleWidget::mouseMoveEvent(QMouseEvent *event)
 
     QByteArray itemData;
     QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-    dataStream << piece.pixmap << piece.location;
+    // simpan juga rotation supaya tidak hilang
+    dataStream << piece.original << piece.location << piece.rotation;
 
     QMimeData *mimeData = new QMimeData;
     mimeData->setData(PiecesList::puzzleMimeType(), itemData);
@@ -182,17 +209,22 @@ void PuzzleWidget::mouseMoveEvent(QMouseEvent *event)
     update(square);
 }
 
+
 void PuzzleWidget::rotatePieceAt(const QRect &square)
 {
     int idx = findPiece(square);
     if (idx == -1) return;
 
     Piece &p = pieces[idx];
-    p.rotation = (p.rotation + 90) % 360;
+    p.rotation = (p.rotation + 90) % 360;  // update rotasi di data
     p.pixmap = p.original.transformed(QTransform().rotate(p.rotation), Qt::SmoothTransformation);
 
+    qDebug() << "[Rotate] Piece at" << p.location << "rotation now =" << p.rotation;
+
     update(p.rect);
+    checkCompletion();  // cek setiap kali rotate
 }
+
 
 void PuzzleWidget::addPieceWithRotation(const QPixmap &pixmap, const QPoint &location, int rotation)
 {
@@ -208,19 +240,20 @@ void PuzzleWidget::addPieceWithRotation(const QPixmap &pixmap, const QPoint &loc
 
 void PuzzleWidget::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event);
     QPainter painter(this);
-    painter.fillRect(event->rect(), Qt::white);
 
-    if (highlightedRect.isValid())
-    {
-        painter.setBrush(QColor("#ffcccc"));
-        painter.setPen(Qt::NoPen);
-        painter.drawRect(highlightedRect.adjusted(0, 0, -1, -1));
+    for (const Piece &p : pieces) {
+        // gambar potongan puzzle
+        painter.drawPixmap(p.rect, p.pixmap);
+
+        // HANYA debug di console, tidak ditulis di UI
+        qDebug() << "[PaintDebug] Piece at location =" << p.location
+                 << "rect =" << p.rect
+                 << "rotation =" << p.rotation;
     }
-
-    for (const Piece &piece : pieces)
-        painter.drawPixmap(piece.rect, piece.pixmap);
 }
+
 
 const QRect PuzzleWidget::targetSquare(const QPoint &position) const
 {
