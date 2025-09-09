@@ -13,24 +13,25 @@
 #include <QFont>
 #include <QStyle>
 
-// Implement the static background function
 void MainWindow::applyBackground(QWidget *widget, const QString &imagePath)
 {
-    widget->setStyleSheet(QString(
-                              "QWidget {"
-                              "background-image: url(:/images/background.png);"
-                              "background-position: center;"
-                              "background-repeat: no-repeat;"
-                              "background-size: cover;"
-                              "}"
-                              ).arg(imagePath));
+    Q_UNUSED(imagePath); // Add this line to avoid unused parameter warning
+
+    widget->setStyleSheet(
+        "QWidget {"
+        "background-image: url(:/images/background.png);"
+        "background-position: center;"
+        "background-repeat: no-repeat;"
+        "background-size: cover;"
+        "}"
+        );
 }
 // mainwindow.cpp - in the constructor
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle(tr("Puzzle Game"));
-    setFixedSize(1000, 700); // Increased from 800x600 to 1000x700
+    setFixedSize(1000, 700);
 
     // Set background image
     QWidget *central = new QWidget(this);
@@ -54,31 +55,38 @@ MainWindow::MainWindow(QWidget *parent)
 
     QVBoxLayout *overlayLayout = new QVBoxLayout(overlay);
     overlayLayout->setSpacing(30);
-    overlayLayout->setContentsMargins(50, 50, 50, 50); // Increased margins
+    overlayLayout->setContentsMargins(50, 50, 50, 50);
 
     // Title - make it larger
     QLabel *titleLabel = new QLabel("PUZZLE GAME");
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setStyleSheet("QLabel {"
                               "color: white;"
-                              "font-size: 42px;" // Increased from 36px
+                              "font-size: 42px;"
                               "font-weight: bold;"
                               "text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"
-                              "margin-bottom: 40px;" // Increased spacing
+                              "margin-bottom: 40px;"
                               "}");
-    overlayLayout->addStretch();
-    overlayLayout->addWidget(titleLabel);
 
     // Buttons - make them larger
-    QPushButton *defaultPuzzleBtn = createGlassButton("Puzzle Bawaan");
+    QPushButton *defaultPuzzleBtn = createGlassButton("Start Game");
     QPushButton *generatePuzzleBtn = createGlassButton("Generate Puzzle");
-    QPushButton *leaderboardBtn = createGlassButton("leaderboard");
+    QPushButton *leaderboardBtn = createGlassButton("Leaderboard");
 
-    // Update createGlassButton to make buttons larger
-    overlayLayout->addWidget(defaultPuzzleBtn);
-    overlayLayout->addWidget(generatePuzzleBtn);
-    overlayLayout->addWidget(leaderboardBtn);
-    overlayLayout->addStretch();
+    // Create a vertical layout for the buttons to center them
+    QVBoxLayout *buttonLayout = new QVBoxLayout();
+    buttonLayout->setSpacing(20);
+    buttonLayout->setAlignment(Qt::AlignCenter); // Center the buttons
+
+    buttonLayout->addWidget(defaultPuzzleBtn, 0, Qt::AlignCenter);
+    buttonLayout->addWidget(generatePuzzleBtn, 0, Qt::AlignCenter);
+    buttonLayout->addWidget(leaderboardBtn, 0, Qt::AlignCenter);
+
+    // Add stretch before and after the buttons to center them vertically
+    overlayLayout->addStretch(); // Top stretch
+    overlayLayout->addWidget(titleLabel);
+    overlayLayout->addLayout(buttonLayout); // Add the centered button layout
+    overlayLayout->addStretch(); // Bottom stretch
 
     mainLayout->addWidget(overlay);
 
@@ -127,7 +135,7 @@ QPushButton* MainWindow::createGlassButton(const QString &text)
 
 void MainWindow::openDefaultPuzzleMenu()
 {
-    auto *win = new DefaultPuzzleMenuWindow(dbManager, this);
+    auto *win = new DefaultPuzzleMenuWindow(dbManager, nullptr);  // ← Change to nullptr
     win->setAttribute(Qt::WA_DeleteOnClose);
     MainWindow::applyBackground(win); // Apply same background
     win->show();
@@ -135,7 +143,7 @@ void MainWindow::openDefaultPuzzleMenu()
 
 void MainWindow::openGeneratePuzzleMenu()
 {
-    auto *win = new GeneratePuzzleMenuWindow(dbManager, this);
+    auto *win = new GeneratePuzzleMenuWindow(dbManager, nullptr); // ← Change 'this' to 'nullptr'
     win->setAttribute(Qt::WA_DeleteOnClose);
     MainWindow::applyBackground(win); // Apply same background
     win->show();

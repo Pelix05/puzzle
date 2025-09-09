@@ -27,11 +27,11 @@ void PuzzleWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void PuzzleWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-    QRect updateRect = highlightedRect.united(targetSquare(event->pos()));
+    QRect updateRect = highlightedRect.united(targetSquare(event->position().toPoint()));
     if (event->mimeData()->hasFormat(PiecesList::puzzleMimeType())
-        && findPiece(targetSquare(event->pos())) == -1)
+        && findPiece(targetSquare(event->position().toPoint())) == -1)
     {
-        highlightedRect = targetSquare(event->pos());
+        highlightedRect = targetSquare(event->position().toPoint());
         event->setDropAction(Qt::MoveAction);
         event->accept();
     }
