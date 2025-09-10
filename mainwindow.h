@@ -11,7 +11,10 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    static void applyBackground(QWidget *widget, const QString &imagePath = ":/images/background.jpg");
+public:
+    static void applyBackground(QWidget *widget);
+    static void applyBackground(QWidget *widget, const QString &imagePath);
+
 
 private:
     DatabaseManager *dbManager;

@@ -12,32 +12,41 @@
 #include <QFont>
 #include <QStyle>
 
-// Static function to apply background to any QWidget
+// Version without image path → uses default
+void MainWindow::applyBackground(QWidget *widget)
+{
+    applyBackground(widget, ":/images/background.jpg");
+}
+
 void MainWindow::applyBackground(QWidget *widget, const QString &imagePath)
 {
+    widget->setObjectName("mainBackground"); // Give it a unique object name
+    widget->setAttribute(Qt::WA_StyledBackground);
+
     widget->setStyleSheet(
         QString(
-            "QWidget {"
-            "background-image: url(%1);"
-            "background-position: center;"
-            "background-repeat: no-repeat;"
-            "background-size: cover;"
+            "#mainBackground {"
+            "border-image: url(%1) 0 0 0 0 stretch stretch;"
             "}"
             ).arg(imagePath)
         );
 }
+
 
 // Constructor
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle(tr("Puzzle Game"));
-    setFixedSize(800, 600);
+    setFixedSize(1700, 1000);
 
     // Central widget
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
-    applyBackground(central, ":/images/background.jpg");
+
+    // Apply wallpaper only to central widget
+    applyBackground(central, ":/images/background.png");
+
 
     // Main layout
     QVBoxLayout *mainLayout = new QVBoxLayout(central);
@@ -47,14 +56,11 @@ MainWindow::MainWindow(QWidget *parent)
     QFrame *overlay = new QFrame();
     overlay->setStyleSheet(
         "QFrame {"
-        "background-image: url(:/images/background.png);"
-        "background-position: center;"
-        "background-repeat: no-repeat;"
-        "background-size: cover;"
-        "background-color: rgba(0,0,0,150);"
+        "background-color: rgba(0,0,0,150);" // semi-transparent only
         "border: none;"
         "}"
         );
+
 
 
     QVBoxLayout *overlayLayout = new QVBoxLayout(overlay);
