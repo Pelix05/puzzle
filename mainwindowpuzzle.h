@@ -25,6 +25,8 @@ public:
             );
     }
 
+
+
 protected:
     void paintEvent(QPaintEvent *event) override {
         QFrame::paintEvent(event);
@@ -52,6 +54,9 @@ protected:
         }
     }
 
+
+
+
 private:
     int m_gridSize;
 };
@@ -74,12 +79,16 @@ private slots:
     void updateTimer();
     void resetPuzzle();
     void undoMove();
+    void saveProgress();
+    void loadProgress();
+
 
 private:
     void loadImage(const QString &fileName, const QString &grey_fileName);
     void setupPuzzle();
     void setupWidgets();
     void promptAndSaveRecord();
+
 
     QPixmap puzzleImage;
     QLabel *greyImage;

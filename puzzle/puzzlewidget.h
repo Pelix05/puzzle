@@ -26,7 +26,17 @@ public:
     int gridSize() const { return m_GridSize; }
     void removePiece(const QRect &rect);
     void addPieceWithRotation(const QPixmap &pixmap, const QPoint &location, int rotation);
+
+    struct Piece {
+        QPixmap pixmap;
+        QPixmap original;
+        QPoint location;
+        QRect rect;
+        int rotation;
+    };
     void rotatePieceAt(const QRect &square);
+    const QVector<Piece>& getPieces() const { return pieces; }
+
 
 
 signals:
@@ -44,13 +54,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    struct Piece {
-        QPixmap pixmap;
-        QPixmap original; // real photo (0°)
-        QRect rect;
-        QPoint location;
-        int rotation;     // 0, 90, 180, 270
-    };
+
 
     int findPiece(const QRect &pieceRect) const;
     const QRect targetSquare(const QPoint &position) const;

@@ -7,6 +7,15 @@
 #include <QPushButton>
 #include <QRandomGenerator>
 #include <QInputDialog>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QFile>
+#include <QDir>
+#include <QDateTime>
+#include <QInputDialog>
+#include <QMessageBox>
+
 
 
 MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int grid, int timerSeconds, DatabaseManager *db,  QWidget *parent)
@@ -77,6 +86,14 @@ void MainWindowPuzzle::setupWidgets()
     QPushButton *backBtn = new QPushButton("Back");
     QPushButton *resetButton = new QPushButton("Reset");
     QPushButton *undoButton = new QPushButton("Undo");
+    QPushButton *saveBtn = new QPushButton("Save");
+    QPushButton *loadBtn = new QPushButton("Load");
+    leftLayout->addWidget(saveBtn);
+    leftLayout->addWidget(loadBtn);
+
+    connect(saveBtn, &QPushButton::clicked, this, &MainWindowPuzzle::saveProgress);
+    connect(loadBtn, &QPushButton::clicked, this, &MainWindowPuzzle::loadProgress);
+
     leftLayout->addWidget(backBtn);
     leftLayout->addWidget(piecesBox); // semi-transparent box for pieces list
     leftLayout->addWidget(timerLabel);
@@ -223,3 +240,103 @@ void MainWindowPuzzle::promptAndSaveRecord()
     }
 }
 
+void MainWindowPuzzle::saveProgress() {
+    QJsonObject saveData;
+    saveData["gridSize"] = gridSize;
+    saveData["timeLeft"] = timeLeft;
+
+    // ✅ Pieces di puzzleWidget
+    QJsonArray placedPieces;
+    for (const auto &p : puzzleWidget->getPieces()) {
+        QJsonObject obj;
+        obj["x"] = p.location.x();
+        obj["y"] = p.location.y();
+        obj["rotation"] = p.rotation;
+        obj["rectX"] = p.rect.x();
+        obj["rectY"] = p.rect.y();
+        placedPieces.append(obj);
+    }
+    saveData["placedPieces"] = placedPieces;
+
+    // ✅ Pieces di piecesList
+    QJsonArray remaining;
+    for (int i=0; i<piecesList->count(); i++) {
+        QListWidgetItem *item = piecesList->item(i);
+        QPoint loc = item->data(Qt::UserRole+1).toPoint();
+        int rot = item->data(Qt::UserRole+2).toInt();
+        QJsonObject obj;
+        obj["x"] = loc.x();
+        obj["y"] = loc.y();
+        obj["rotation"] = rot;
+        remaining.append(obj);
+    }
+    saveData["remainingPieces"] = remaining;
+
+    // Tulis ke file
+    QDir().mkpath("saves");
+    QFile file("saves/save_" + QString::number(QDateTime::currentSecsSinceEpoch()) + ".json");
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(QJsonDocument(saveData).toJson());
+        file.close();
+        QMessageBox::information(this, "Saved", "Progress saved!");
+    }
+}
+
+void MainWindowPuzzle::loadProgress() {
+    QString dir = "saves";
+    QDir saveDir(dir);
+    QStringList files = saveDir.entryList(QStringList() << "*.json", QDir::Files);
+
+    if (files.isEmpty()) {
+        QMessageBox::warning(this, "Load", "No saved progress found.");
+        return;
+    }
+
+    bool ok;
+    QString fileName = QInputDialog::getItem(this, "Load Progress",
+                                             "Choose a save:", files, 0, false, &ok);
+    if (!ok || fileName.isEmpty()) return;
+
+    QFile file(dir + "/" + fileName);
+    if (!file.open(QIODevice::ReadOnly)) return;
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    file.close();
+
+    QJsonObject saveData = doc.object();
+    gridSize = saveData["gridSize"].toInt();
+    timeLeft = saveData["timeLeft"].toInt();
+
+    puzzleWidget->clear();
+    piecesList->clear();
+
+    // Load placed pieces
+    QJsonArray placed = saveData["placedPieces"].toArray();
+    for (auto v : placed) {
+        QJsonObject obj = v.toObject();
+        QPoint loc(obj["x"].toInt(), obj["y"].toInt());
+        int rot = obj["rotation"].toInt();
+        QRect rect(obj["rectX"].toInt(), obj["rectY"].toInt(), puzzleWidget->pieceSize(), puzzleWidget->pieceSize());
+
+        QPixmap pieceImg = puzzleImage.copy(loc.x()*puzzleWidget->pieceSize(), loc.y()*puzzleWidget->pieceSize(),
+                                            puzzleWidget->pieceSize(), puzzleWidget->pieceSize());
+
+        puzzleWidget->addPieceWithRotation(pieceImg, loc, rot);
+    }
+
+    // Load remaining pieces
+    QJsonArray remaining = saveData["remainingPieces"].toArray();
+    for (auto v : remaining) {
+        QJsonObject obj = v.toObject();
+        QPoint loc(obj["x"].toInt(), obj["y"].toInt());
+        int rot = obj["rotation"].toInt();
+
+        QPixmap pieceImg = puzzleImage.copy(loc.x()*puzzleWidget->pieceSize(), loc.y()*puzzleWidget->pieceSize(),
+                                            puzzleWidget->pieceSize(), puzzleWidget->pieceSize());
+        piecesList->addPiece(pieceImg, loc, rot);
+    }
+
+    timerLabel->setText(QString("Time: %1 s").arg(timeLeft));
+    timer->start(1000);
+
+    QMessageBox::information(this, "Loaded", "Progress loaded!");
+}
