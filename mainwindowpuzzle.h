@@ -5,8 +5,8 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QTimer>
-#include <QFrame>          // For PuzzleBoardBox
-#include <Qpainter>
+#include <QFrame>
+#include <QPixmap>
 #include "puzzle/pieceslist.h"
 #include "puzzle/puzzlewidget.h"
 #include "puzzle/databasemanager.h"
@@ -19,38 +19,14 @@ public:
     {
         setStyleSheet(
             "QFrame {"
-            "background-color: rgba(255, 255, 255, 50);" // semi-transparent
+            "background-color: rgba(255, 255, 255, 50);"
             "border-radius: 15px;"
             "}"
             );
     }
 
 protected:
-    void paintEvent(QPaintEvent *event) override {
-        QFrame::paintEvent(event);
-
-        QPainter painter(this);
-        painter.setRenderHint(QPainter::Antialiasing);
-
-        QPen pen(QColor(255, 255, 255, 150)); // white, semi-transparent
-        pen.setWidth(2);
-        painter.setPen(pen);
-
-        int w = width();
-        int h = height();
-
-        // Draw vertical lines
-        for (int i = 1; i < m_gridSize; ++i) {
-            int x = i * w / m_gridSize;
-            painter.drawLine(x, 0, x, h);
-        }
-
-        // Draw horizontal lines
-        for (int i = 1; i < m_gridSize; ++i) {
-            int y = i * h / m_gridSize;
-            painter.drawLine(0, y, w, y);
-        }
-    }
+    void paintEvent(QPaintEvent *event) override; // Only declaration here
 
 private:
     int m_gridSize;
@@ -60,7 +36,8 @@ class MainWindowPuzzle : public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int gridSize, int timerSeconds,  DatabaseManager *dbManager, QWidget *parent = nullptr);
+    MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int gridSize,
+                     int timerSeconds, DatabaseManager *dbManager, QWidget *parent = nullptr);
 
     struct Move {
         QPixmap pixmap;
@@ -90,7 +67,7 @@ private:
     int timeLeft;
     int gridSize;
 
-    PuzzleBoardBox *puzzleBoardBox;  // <-- New: box with grid overlay
+    PuzzleBoardBox *puzzleBoardBox;
 
     DatabaseManager *dbManager;
     int moveCount;

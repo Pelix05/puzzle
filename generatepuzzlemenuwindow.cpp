@@ -170,10 +170,13 @@ void GeneratePuzzleMenuWindow::startCustomPuzzle()
         return;
     }
 
-    MainWindowPuzzle *win = new MainWindowPuzzle(selectedImagePath, selectedImagePath,
-                                                 gridSize, timerSeconds, dbManager, nullptr);
+    MainWindowPuzzle *win = new MainWindowPuzzle(
+        selectedImagePath, selectedImagePath,
+        gridSize, timerSeconds, dbManager, nullptr
+        );
     win->setAttribute(Qt::WA_DeleteOnClose);
-    MainWindow::applyBackground(win);
+
     win->show();
-    this->close();
+    this->close(); // close the generate puzzle menu
 }
+
