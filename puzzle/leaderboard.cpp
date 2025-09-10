@@ -15,7 +15,7 @@ Leaderboard::Leaderboard(DatabaseManager *manager, QWidget *parent)
 
     // 设置背景图
     QPalette palette;
-    QPixmap bgPixmap(":/images/background.png"); // 替换为你自己的图片路径
+    QPixmap bgPixmap(":/images/background2.png"); // 替换为你自己的图片路径
     palette.setBrush(QPalette::Window, bgPixmap.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     setAutoFillBackground(true);
     setPalette(palette);
