@@ -206,7 +206,8 @@ void GeneratePuzzleMenuWindow::startCustomPuzzle()
         return;
     }
 
-    MainWindowPuzzle *win = new MainWindowPuzzle(selectedImagePath, selectedImagePath, gridSize, timerSeconds, dbManager, this);
+    MainWindowPuzzle *win = new MainWindowPuzzle(selectedImagePath, selectedImagePath,
+                                                 gridSize, timerSeconds, dbManager, nullptr);
     win->setAttribute(Qt::WA_DeleteOnClose);
     MainWindow::applyBackground(win); // Apply same background to puzzle window
     win->show();
