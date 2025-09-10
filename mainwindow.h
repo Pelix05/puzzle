@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QPushButton>
-#include "databasemanager.h"
+#include "puzzle/databasemanager.h"
 
 class MainWindow : public QMainWindow
 {
@@ -11,7 +11,10 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    static void applyBackground(QWidget *widget, const QString &imagePath = ":/images/background.jpg");
+public:
+    static void applyBackground(QWidget *widget);
+    static void applyBackground(QWidget *widget, const QString &imagePath);
+
 
 private:
     DatabaseManager *dbManager;

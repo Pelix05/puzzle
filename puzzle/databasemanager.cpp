@@ -32,29 +32,33 @@ int DatabaseManager::insertPlayer(const QString &name)
     return query.lastInsertId().toInt();
 }
 
-void DatabaseManager::insertRecord(int playerId, int duration, int steps)
+void DatabaseManager::insertRecord(int playerId, int duration, int steps, int level)
 {
+    qDebug() << "InsertRecord called";
     QSqlQuery query(m_database->getDatabase());
-    query.prepare("INSERT INTO records (player_id, duration, steps) "
-                  "VALUES (:player_id, :duration, :steps)");
+    query.prepare("INSERT INTO records (player_id, duration, steps, level) "
+                  "VALUES (:player_id, :duration, :steps, :level)");
     query.bindValue(":player_id", playerId);
     query.bindValue(":duration", duration);
     query.bindValue(":steps", steps);
+    query.bindValue(":level", level);
 
     if (!query.exec()) {
         qDebug() << "Insert record failed:" << query.lastError().text();
     }
 }
 
-QList<Record> DatabaseManager::getTopRecords(int limit)
+QList<Record> DatabaseManager::getTopRecords(int level, int limit)
 {
     QList<Record> result;
     QSqlQuery query(m_database->getDatabase());
     query.prepare("SELECT players.name, records.duration, records.steps, records.created_at "
                   "FROM records "
                   "JOIN players ON records.player_id = players.player_id "
+                  "WHERE records.level = :level "
                   "ORDER BY records.duration ASC "
                   "LIMIT :limit");
+    query.bindValue(":level", level);
     query.bindValue(":limit", limit);
 
     if (!query.exec()) {
@@ -65,9 +69,10 @@ QList<Record> DatabaseManager::getTopRecords(int limit)
     while (query.next()) {
         Record r;
         r.playerName = query.value(0).toString();
-        r.duration = query.value(1).toInt();
-        r.steps = query.value(2).toInt();
-        r.createdAt = query.value(3).toString();
+        r.duration   = query.value(1).toInt();
+        r.steps      = query.value(2).toInt();
+        r.level      = level;
+        r.createdAt  = query.value(3).toString();
         result.append(r);
     }
     return result;

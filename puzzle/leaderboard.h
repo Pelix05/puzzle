@@ -13,14 +13,16 @@ public:
     Leaderboard(DatabaseManager *manager, QWidget *parent = nullptr);
 
     // 刷新排行榜显示
-    void refresh(int topN = 10);
+    void refresh();
+
 
 private:
     DatabaseManager *m_dbManager;
     QVBoxLayout *m_layout;
     QScrollArea *m_scrollArea;
 
-    void clearLayout(); // 清空旧卡片
+    void clearLayout();
+    void addCategory(const QString &title, const QList<Record> &records, const QString &color);
 };
 
 #endif // LEADERBOARD_H

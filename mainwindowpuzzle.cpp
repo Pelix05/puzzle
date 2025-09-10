@@ -1,5 +1,5 @@
 #include "mainwindowpuzzle.h"
-#include "databasemanager.h"
+#include "puzzle/databasemanager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -10,8 +10,18 @@
 
 
 MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int grid, int timerSeconds, DatabaseManager *db,  QWidget *parent)
-    : QMainWindow(parent), gridSize(grid), timeLeft(timerSeconds), dbManager(db), moveCount(0)
+    : QMainWindow(parent), timeLeft(timerSeconds), gridSize(grid), dbManager(db), moveCount(0)
 {
+    // ✅ 根据 gridSize 判定难度
+    if (grid == 3)
+        level = 1; // 简单
+    else if (grid == 5)
+        level = 2; // 中等
+    else if (grid == 7)
+        level = 3; // 困难
+    else
+        level = 0; // 默认
+
     puzzleWidget = new PuzzleWidget(400, gridSize, this);
     piecesList = new PiecesList(puzzleWidget->width(), this);
     greyImage = new QLabel;
@@ -37,30 +47,64 @@ MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &grey
 
 void MainWindowPuzzle::setupWidgets()
 {
-    QFrame *frame = new QFrame;
-    QHBoxLayout *frameLayout = new QHBoxLayout(frame);
+    // Set solid background color for the whole window
+    this->setStyleSheet("QMainWindow { background-color: #2c3e50; }"); // dark color
 
+    // Central frame for everything
+    QFrame *centralFrame = new QFrame(this);
+    centralFrame->setStyleSheet("QFrame { background: transparent; }");
+    setCentralWidget(centralFrame);
+
+    QHBoxLayout *mainLayout = new QHBoxLayout(centralFrame);
+
+    // --- Left panel (pieces, timer, buttons) ---
     QVBoxLayout *leftLayout = new QVBoxLayout;
 
+    // Semi-transparent box for puzzle pieces list
+    QFrame *piecesBox = new QFrame;
+    piecesBox->setStyleSheet(
+        "QFrame {"
+        "background-color: rgba(255, 255, 255, 50);" // semi-transparent white
+        "border-radius: 15px;"
+        "padding: 10px;"
+        "}"
+        );
+    QVBoxLayout *piecesLayout = new QVBoxLayout(piecesBox);
+    piecesLayout->addWidget(greyImage);
+    piecesLayout->addWidget(piecesList);
+
+    // Add timer and control buttons
     QPushButton *backBtn = new QPushButton("Back");
-    connect(backBtn, &QPushButton::clicked, this, &MainWindowPuzzle::close);
-    leftLayout->addWidget(backBtn);
-
-    leftLayout->addWidget(greyImage);
-    leftLayout->addWidget(piecesList);
-    leftLayout->addWidget(timerLabel);
-
     QPushButton *resetButton = new QPushButton("Reset");
     QPushButton *undoButton = new QPushButton("Undo");
-    connect(resetButton, &QPushButton::clicked, this, &MainWindowPuzzle::resetPuzzle);
-    connect(undoButton, &QPushButton::clicked, this, &MainWindowPuzzle::undoMove);
+    leftLayout->addWidget(backBtn);
+    leftLayout->addWidget(piecesBox); // semi-transparent box for pieces list
+    leftLayout->addWidget(timerLabel);
     leftLayout->addWidget(resetButton);
     leftLayout->addWidget(undoButton);
 
-    frameLayout->addLayout(leftLayout);
-    frameLayout->addWidget(puzzleWidget);
-    setCentralWidget(frame);
+    mainLayout->addLayout(leftLayout);
+
+    // --- Right panel: Puzzle board ---
+    // Semi-transparent box for puzzle board
+    QFrame *puzzleBox = new QFrame;
+    puzzleBox->setStyleSheet(
+        "QFrame {"
+        "background-color: rgba(255, 255, 255, 50);" // semi-transparent white
+        "border-radius: 15px;"
+        "}"
+        );
+    QVBoxLayout *puzzleLayout = new QVBoxLayout(puzzleBox);
+    puzzleLayout->addWidget(puzzleWidget);
+
+    mainLayout->addWidget(puzzleBox); // place puzzle board inside box
+
+    // Connect buttons
+    connect(backBtn, &QPushButton::clicked, this, &MainWindowPuzzle::close);
+    connect(resetButton, &QPushButton::clicked, this, &MainWindowPuzzle::resetPuzzle);
+    connect(undoButton, &QPushButton::clicked, this, &MainWindowPuzzle::undoMove);
 }
+
 
 void MainWindowPuzzle::loadImage(const QString &fileName, const QString &grey_fileName)
 {
@@ -152,6 +196,7 @@ void MainWindowPuzzle::promptAndSaveRecord()
     int duration = 1000 - timeLeft;
     int steps = moveCount;
 
+
     bool ok;
     QString username = QInputDialog::getText(this, "Enter your name",
                                              "Player Name:", QLineEdit::Normal,
@@ -168,8 +213,13 @@ void MainWindowPuzzle::promptAndSaveRecord()
                 playerId = query.value(0).toInt();
         }
 
-        // 插入成绩
-        dbManager->insertRecord(playerId, duration, steps);
+
+        int pid = playerId;
+        int dur = duration;
+        int st = steps;
+        int lev = level;
+
+        dbManager->insertRecord(pid, dur, st, lev);
     }
 }
 
