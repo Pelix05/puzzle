@@ -45,39 +45,34 @@ void PuzzleWidget::dragMoveEvent(QDragMoveEvent *event)
 
 void PuzzleWidget::dropEvent(QDropEvent *event)
 {
-    if (!event->mimeData()->hasFormat(PiecesList::puzzleMimeType()))
-    {
+    if (!event->mimeData()->hasFormat(PiecesList::puzzleMimeType())) {
         event->ignore();
         return;
     }
 
-    // Baca data dari PiecesList
     QByteArray pieceData = event->mimeData()->data(PiecesList::puzzleMimeType());
     QDataStream dataStream(&pieceData, QIODevice::ReadOnly);
     QPixmap pixmap;
-    QPoint location; // posisi grid yang benar
+    QPoint location;
     int rotation;
     dataStream >> pixmap >> location >> rotation;
 
-    // Tentukan kotak puzzle sesuai posisi mouse drop
-    QPoint dropPos = event->pos();
-    QRect targetRect = targetSquare(dropPos);
-
-    // Kalau kotak itu sudah ada piece, tolak drop
-    if (findPiece(targetRect) != -1)
-    {
+    QRect targetRect = targetSquare(event->position().toPoint());
+    if (findPiece(targetRect) != -1) {
         highlightedRect = QRect();
         event->ignore();
         return;
     }
 
-    // Tambahkan piece ke puzzleWidget
+    // Resize the piece to exactly match the target square
+    QPixmap resizedPiece = pixmap.scaled(targetRect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
     Piece piece;
-    piece.original = pixmap; // simpan original 0°
+    piece.original = pixmap;
+    piece.pixmap = resizedPiece.transformed(QTransform().rotate(rotation), Qt::SmoothTransformation);
     piece.rotation = rotation;
-    piece.pixmap = pixmap.transformed(QTransform().rotate(rotation), Qt::SmoothTransformation);
-    piece.rect = targetRect;  // posisi di puzzleWidget
-    piece.location = location; // posisi grid asli (untuk checkCompletion)
+    piece.rect = targetRect;
+    piece.location = location;
 
     pieces.append(piece);
     emit piecePlaced(piece.pixmap, piece.location, piece.rect);
@@ -87,16 +82,9 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
 
     event->setDropAction(Qt::MoveAction);
     event->accept();
-    qDebug() << "[PuzzleWidget] Dropped piece at mouse pos" << dropPos
-             << "targetRect =" << targetRect
-             << "original location =" << location
-             << "rotation =" << rotation;
 
-
-    // Cek apakah puzzle sudah selesai
     checkCompletion();
 }
-
 
 
 
@@ -243,15 +231,50 @@ void PuzzleWidget::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     QPainter painter(this);
 
-    for (const Piece &p : pieces) {
-        // gambar potongan puzzle
-        painter.drawPixmap(p.rect, p.pixmap);
+    int ps = pieceSize(); // current size of each grid cell
 
-        // HANYA debug di console, tidak ditulis di UI
-        qDebug() << "[PaintDebug] Piece at location =" << p.location
-                 << "rect =" << p.rect
-                 << "rotation =" << p.rotation;
+    for (const Piece &p : pieces) {
+        // Scale each piece to fill the grid cell
+        painter.drawPixmap(p.rect.topLeft(), p.pixmap.scaled(ps, ps, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     }
+}
+
+
+void PuzzleWidget::setPuzzleImage(const QPixmap &pix)
+{
+    m_fullPuzzleImage = pix;
+    pieces.clear();
+
+    int fullWidth = m_fullPuzzleImage.width();
+    int fullHeight = m_fullPuzzleImage.height();
+    int pieceWidth = fullWidth / m_GridSize;
+    int pieceHeight = fullHeight / m_GridSize;
+
+    for (int y = 0; y < m_GridSize; ++y)
+    {
+        for (int x = 0; x < m_GridSize; ++x)
+        {
+            QPixmap piece = m_fullPuzzleImage.copy(
+                x * pieceWidth, y * pieceHeight, pieceWidth, pieceHeight
+                );
+
+            Piece p;
+            p.original = piece;
+            p.pixmap = piece;
+            p.rect = QRect(x * pieceWidth, y * pieceHeight, pieceWidth, pieceHeight);
+            p.location = QPoint(x, y);
+            p.rotation = 0;
+            pieces.append(p);
+        }
+    }
+
+    update();
+}
+
+int PuzzleWidget::pieceSize() const
+{
+    int size = qMin(width(), height()); // use current widget size
+    return size / m_GridSize;
 }
 
 
@@ -261,9 +284,5 @@ const QRect PuzzleWidget::targetSquare(const QPoint &position) const
                  QSize(pieceSize(), pieceSize()));
 }
 
-int PuzzleWidget::pieceSize() const
-{
-    return m_ImageSize / m_GridSize;
-}
 
 

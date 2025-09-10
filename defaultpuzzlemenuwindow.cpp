@@ -147,18 +147,18 @@ DefaultPuzzleMenuWindow::DefaultPuzzleMenuWindow(DatabaseManager *db)
 // KEEP THE ORIGINAL PUZZLE LOGIC EXACTLY AS IT WAS
 void DefaultPuzzleMenuWindow::startPuzzle3x3()
 {
-    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 3, 300, dbManager, this);
+    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 3, 300, dbManager,"default", this);
     win->show();
 }
 
 void DefaultPuzzleMenuWindow::startPuzzle5x5()
 {
-    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 5, 300, dbManager, this);
+    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 5, 300, dbManager, "default", this);
     win->show();
 }
 
 void DefaultPuzzleMenuWindow::startPuzzle7x7()
 {
-    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 7, 300, dbManager, this);
+    MainWindowPuzzle *win = new MainWindowPuzzle(":/images/colorImg.bmp", ":/images/greyImg.bmp", 7, 300, dbManager, "default", this);
     win->show();
 }
