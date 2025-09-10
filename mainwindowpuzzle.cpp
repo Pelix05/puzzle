@@ -6,6 +6,7 @@
 #include <QPainter>
 #include <QPushButton>
 #include <QRandomGenerator>
+#include <QResizeEvent>
 
 ////////////////////////////
 // PuzzleBoardBox Implementation
@@ -34,16 +35,24 @@ void PuzzleBoardBox::paintEvent(QPaintEvent *event)
 ////////////////////////////
 // MainWindowPuzzle Implementation
 ////////////////////////////
-MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath,
-                                   int grid, int timerSeconds, DatabaseManager *db,
-                                   QWidget *parent)
+MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int grid, int timerSeconds, DatabaseManager *db, QWidget *parent)
     : QMainWindow(parent), timeLeft(timerSeconds), gridSize(grid), dbManager(db), moveCount(0)
 {
-    // Determine difficulty level
-    if (grid == 3) level = 1;
-    else if (grid == 5) level = 2;
-    else if (grid == 7) level = 3;
-    else level = 0;
+    // Set window size
+    setMinimumSize(1700, 1000);         // force a large window
+    setWindowState(Qt::WindowMaximized); // open maximized (optional)
+
+    // ✅ 根据 gridSize 判定难度
+    if (grid == 3)
+        level = 1; // 简单
+    else if (grid == 5)
+        level = 2; // 中等
+    else if (grid == 7)
+        level = 3; // 困难
+    else
+        level = 0; // 默认
+
+
 
     puzzleWidget = new PuzzleWidget(400, gridSize, this);
     piecesList = new PiecesList(puzzleWidget->width(), this);
@@ -231,6 +240,15 @@ void MainWindowPuzzle::updateTimer()
     {
         timer->stop();
         QMessageBox::warning(this, "Time's up!", "Time is over!");
+    }
+}
+void MainWindowPuzzle::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+
+    // Resize puzzle board dynamically
+    if (puzzleWidget && !puzzleImage.isNull()) {
+        setupPuzzle();
     }
 }
 

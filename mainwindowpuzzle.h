@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QFrame>
 #include <QPixmap>
+#include <QResizeEvent>
 #include "puzzle/pieceslist.h"
 #include "puzzle/puzzlewidget.h"
 #include "puzzle/databasemanager.h"
@@ -26,7 +27,7 @@ public:
     }
 
 protected:
-    void paintEvent(QPaintEvent *event) override; // Only declaration here
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     int m_gridSize;
@@ -45,6 +46,9 @@ public:
         QRect rect;
     };
     QVector<Move> moveHistory;
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;  // <--- added for dynamic resizing
 
 private slots:
     void setCompleted();
