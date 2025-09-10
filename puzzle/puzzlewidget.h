@@ -65,6 +65,7 @@ private:
     QPoint dragStartPos;
     int m_ImageSize;
     int m_GridSize;
+     bool isWithinGrid(const QRect &rect) const;
 
     void rotatePieceAt(int index);
 

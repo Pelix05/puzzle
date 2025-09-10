@@ -27,11 +27,14 @@ void PuzzleWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void PuzzleWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-    QRect updateRect = highlightedRect.united(targetSquare(event->position().toPoint()));
+    QRect targetRect = targetSquare(event->position().toPoint());
+    QRect updateRect = highlightedRect.united(targetRect);
+
     if (event->mimeData()->hasFormat(PiecesList::puzzleMimeType())
-        && findPiece(targetSquare(event->position().toPoint())) == -1)
+        && findPiece(targetRect) == -1
+        && isWithinGrid(targetRect)) // ← Tambahkan pengecekan ini
     {
-        highlightedRect = targetSquare(event->position().toPoint());
+        highlightedRect = targetRect;
         event->setDropAction(Qt::MoveAction);
         event->accept();
     }
@@ -43,9 +46,26 @@ void PuzzleWidget::dragMoveEvent(QDragMoveEvent *event)
     update(updateRect);
 }
 
+
+bool PuzzleWidget::isWithinGrid(const QRect &rect) const
+{
+    int maxPos = m_GridSize * pieceSize();
+    return (rect.x() >= 0 && rect.y() >= 0 &&
+            rect.right() < maxPos && rect.bottom() < maxPos);
+}
+
 void PuzzleWidget::dropEvent(QDropEvent *event)
 {
     if (!event->mimeData()->hasFormat(PiecesList::puzzleMimeType())) {
+        event->ignore();
+        return;
+    }
+
+    QRect targetRect = targetSquare(event->position().toPoint());
+
+    // Validasi: pastikan targetRect dalam grid dan tidak ada piece lain
+    if (findPiece(targetRect) != -1 || !isWithinGrid(targetRect)) {
+        highlightedRect = QRect();
         event->ignore();
         return;
     }
@@ -57,12 +77,7 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
     int rotation;
     dataStream >> pixmap >> location >> rotation;
 
-    QRect targetRect = targetSquare(event->position().toPoint());
-    if (findPiece(targetRect) != -1) {
-        highlightedRect = QRect();
-        event->ignore();
-        return;
-    }
+
 
     // Resize the piece to exactly match the target square
     QPixmap resizedPiece = pixmap.scaled(targetRect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
@@ -280,8 +295,15 @@ int PuzzleWidget::pieceSize() const
 
 const QRect PuzzleWidget::targetSquare(const QPoint &position) const
 {
-    return QRect(position / pieceSize() * pieceSize(),
-                 QSize(pieceSize(), pieceSize()));
+    int ps = pieceSize();
+    int x = position.x() / ps;
+    int y = position.y() / ps;
+
+    // Batasi koordinat agar tidak melebihi gridSize
+    x = qBound(0, x, m_GridSize - 1);
+    y = qBound(0, y, m_GridSize - 1);
+
+    return QRect(x * ps, y * ps, ps, ps);
 }
 
 
