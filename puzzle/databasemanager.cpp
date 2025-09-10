@@ -35,16 +35,25 @@ int DatabaseManager::insertPlayer(const QString &name)
 void DatabaseManager::insertRecord(int playerId, int duration, int steps, int level)
 {
     qDebug() << "InsertRecord called";
+
     QSqlQuery query(m_database->getDatabase());
     query.prepare("INSERT INTO records (player_id, duration, steps, level) "
                   "VALUES (:player_id, :duration, :steps, :level)");
+
     query.bindValue(":player_id", playerId);
     query.bindValue(":duration", duration);
     query.bindValue(":steps", steps);
     query.bindValue(":level", level);
 
     if (!query.exec()) {
-        qDebug() << "Insert record failed:" << query.lastError().text();
+        qDebug() << "[Database] inset fail:" << query.lastError().text();
+        qDebug() << "[Database] SQL:" << query.lastQuery();
+        qDebug() << "[Database] 参数:" << query.boundValues();
+    } else {
+        qDebug() << "[Database] insert success, 玩家ID=" << playerId
+                 << " 时长=" << duration
+                 << " 步数=" << steps
+                 << " 模式=" << level;
     }
 }
 

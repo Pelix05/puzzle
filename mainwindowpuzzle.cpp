@@ -162,21 +162,34 @@ void MainWindowPuzzle::promptAndSaveRecord()
     int duration = 1000 - timeLeft;
     int steps = moveCount;
 
+     qDebug() << "[Game] Calculated duration:" << duration << "steps:" << steps;
+
 
     bool ok;
     QString username = QInputDialog::getText(this, "Enter your name",
                                              "Player Name:", QLineEdit::Normal,
                                              "", &ok);
+
+    qDebug() << "[Game] User input:" << username << "ok?" << ok;
+
     if (ok && !username.isEmpty()) {
         int playerId = dbManager->insertPlayer(username);
+        qDebug() << "[Database] insertPlayer returned playerId:" << playerId;
+
         if (playerId == -1) {
             // 用户名已存在，查询ID
             QSqlQuery query;
             query.prepare("SELECT player_id FROM players WHERE name = :name");
             query.bindValue(":name", username);
             query.exec();
-            if (query.next())
+            if (!query.exec()) {
+                qDebug() << "[Database] Failed to query existing player:" << query.lastError().text();
+            } else if (query.next()) {
                 playerId = query.value(0).toInt();
+                qDebug() << "[Database] Existing playerId found:" << playerId;
+            } else {
+                qDebug() << "[Database] No player found with name:" << username;
+            }
         }
 
 
@@ -185,7 +198,14 @@ void MainWindowPuzzle::promptAndSaveRecord()
         int st = steps;
         int lev = level;
 
+        qDebug() << "[Game] Ready to insert record -> playerId:" << pid
+                 << "duration:" << dur << "steps:" << st << "level:" << lev;
+
         dbManager->insertRecord(pid, dur, st, lev);
+
+        qDebug() << "[Game] Record insertion called for playerId:" << pid;
+    }else {
+        qDebug() << "[Game] User cancelled or entered empty name";
     }
 }
 
