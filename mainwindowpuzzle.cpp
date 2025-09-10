@@ -359,6 +359,7 @@ void MainWindowPuzzle::saveProgress() {
     saveData["timeLeft"] = timeLeft;
     saveData["gameMode"] = gameMode;    // Tambahkan metadata mode
     saveData["gameLevel"] = level;      // Tambahkan metadata level
+    saveData["savedPieceSize"] = puzzleWidget->pieceSize();
 
     // ✅ Pieces di puzzleWidget
     QJsonArray placedPieces;
@@ -473,6 +474,13 @@ void MainWindowPuzzle::loadProgress() {
     gridSize = saveData["gridSize"].toInt();
     timeLeft = saveData["timeLeft"].toInt();
 
+    // Dapatkan pieceSize yang disimpan
+    int savedPieceSize = saveData["savedPieceSize"].toInt();
+    int currentPieceSize = puzzleWidget->pieceSize();
+
+    // Hitung scaling factor
+    double scaleFactor = (double)currentPieceSize / savedPieceSize;
+
     puzzleWidget->clear();
     piecesList->clear();
 
@@ -482,12 +490,21 @@ void MainWindowPuzzle::loadProgress() {
         QJsonObject obj = v.toObject();
         QPoint loc(obj["x"].toInt(), obj["y"].toInt());
         int rot = obj["rotation"].toInt();
-        QRect rect(obj["rectX"].toInt(), obj["rectY"].toInt(), puzzleWidget->pieceSize(), puzzleWidget->pieceSize());
 
-        QPixmap pieceImg = puzzleImage.copy(loc.x()*puzzleWidget->pieceSize(), loc.y()*puzzleWidget->pieceSize(),
-                                            puzzleWidget->pieceSize(), puzzleWidget->pieceSize());
+        // Scale coordinates dari savedPieceSize ke currentPieceSize
+        int rectX = obj["rectX"].toInt() * scaleFactor;
+        int rectY = obj["rectY"].toInt() * scaleFactor;
+        QRect rect(rectX, rectY, currentPieceSize, currentPieceSize);
 
-        puzzleWidget->addPieceWithRotation(pieceImg, loc, rot);
+        QPixmap pieceImg = puzzleImage.copy(loc.x() * savedPieceSize,
+                                            loc.y() * savedPieceSize,
+                                            savedPieceSize, savedPieceSize);
+
+        // Scale image ke ukuran current
+        pieceImg = pieceImg.scaled(currentPieceSize, currentPieceSize,
+                                   Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+        puzzleWidget->addPieceWithRotation(pieceImg, loc, rot, rect); // ← Perlu modifikasi fungsi ini
     }
 
     // Load remaining pieces

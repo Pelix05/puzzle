@@ -213,15 +213,15 @@ void PuzzleWidget::rotatePieceAt(const QRect &square)
     checkCompletion();  // cek setiap kali rotate
 }
 
-
-void PuzzleWidget::addPieceWithRotation(const QPixmap &pixmap, const QPoint &location, int rotation)
+void PuzzleWidget::addPieceWithRotation(const QPixmap &pixmap, const QPoint &location,
+                                        int rotation, const QRect &rect)
 {
     Piece piece;
     piece.pixmap = pixmap.transformed(QTransform().rotate(rotation), Qt::SmoothTransformation);
     piece.original = pixmap;
     piece.rotation = rotation;
     piece.location = location;
-    piece.rect = QRect(location * pieceSize(), QSize(pieceSize(), pieceSize()));
+    piece.rect = rect; // ← Gunakan rect yang diberikan, bukan yang dihitung ulang
 
     pieces.append(piece);
 }

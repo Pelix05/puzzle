@@ -25,8 +25,7 @@ public:
     void setGridSize(int grid);
     int gridSize() const { return m_GridSize; }
     void removePiece(const QRect &rect);
-    void addPieceWithRotation(const QPixmap &pixmap, const QPoint &location, int rotation);
-
+void addPieceWithRotation(const QPixmap &pixmap, const QPoint &location, int rotation, const QRect &rect);
     struct Piece {
         QPixmap pixmap;
         QPixmap original;
