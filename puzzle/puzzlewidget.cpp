@@ -6,6 +6,10 @@
 #include <QMimeData>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QApplication>
+#include <QMenu>
+#include <QAction>
+#include <QContextMenuEvent>
 
 PuzzleWidget::PuzzleWidget(int imageSize, int gridSize, QWidget *parent)
     : QWidget(parent), m_ImageSize(imageSize), m_GridSize(gridSize)
@@ -91,6 +95,9 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
 
     pieces.append(piece);
     emit piecePlaced(piece.pixmap, piece.location, piece.rect);
+    if (event->source() != this) {
+        emit pieceMoved(); // ← Hanya emit jika dari external source
+    }
 
     highlightedRect = QRect();
     update(piece.rect);
@@ -144,6 +151,12 @@ void PuzzleWidget::checkCompletion()
 
 void PuzzleWidget::mousePressEvent(QMouseEvent *event)
 {
+    if (event->button() == Qt::RightButton) {
+        // Handle right click untuk rotate (sekarang melalui context menu)
+        event->accept(); // Terima event, jangan lanjut ke drag
+        return;
+    }
+
     if (event->button() != Qt::LeftButton)
         return;
 
@@ -152,8 +165,9 @@ void PuzzleWidget::mousePressEvent(QMouseEvent *event)
     if (idx == -1)
         return;
 
-    // Klik piece untuk rotate
-    rotatePieceAt(square);
+    // Simpan posisi awal untuk drag
+    dragStartPosition = event->pos();
+    dragStartPiece = square;
 }
 void PuzzleWidget::dragLeaveEvent(QDragLeaveEvent *event)
 {
@@ -181,19 +195,24 @@ void PuzzleWidget::clear()
 
 void PuzzleWidget::mouseMoveEvent(QMouseEvent *event)
 {
+    // Hanya handle left button drag
     if (!(event->buttons() & Qt::LeftButton))
         return;
 
+    // Cek jika movement cukup besar untuk dianggap sebagai drag
+    if ((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance()) {
+        return; // Terlalu kecil, mungkin hanya click
+    }
+
     QRect square = targetSquare(event->pos());
     int idx = findPiece(square);
-    if (idx == -1)
+    if (idx == -1 || !isWithinGrid(square))
         return;
 
     Piece piece = pieces.takeAt(idx);
 
     QByteArray itemData;
     QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-    // simpan juga rotation supaya tidak hilang
     dataStream << piece.original << piece.location << piece.rotation;
 
     QMimeData *mimeData = new QMimeData;
@@ -204,14 +223,12 @@ void PuzzleWidget::mouseMoveEvent(QMouseEvent *event)
     drag->setHotSpot(event->pos() - square.topLeft());
     drag->setPixmap(piece.pixmap);
 
-    if (drag->exec(Qt::MoveAction) != Qt::MoveAction)
-    {
-        // Drag gagal → kembalikan piece
+    if (drag->exec(Qt::MoveAction) != Qt::MoveAction) {
         pieces.insert(idx, piece);
     }
+
     update(square);
 }
-
 
 void PuzzleWidget::rotatePieceAt(const QRect &square)
 {
@@ -221,6 +238,7 @@ void PuzzleWidget::rotatePieceAt(const QRect &square)
     Piece &p = pieces[idx];
     p.rotation = (p.rotation + 90) % 360;  // update rotasi di data
     p.pixmap = p.original.transformed(QTransform().rotate(p.rotation), Qt::SmoothTransformation);
+    emit pieceRotated();
 
     qDebug() << "[Rotate] Piece at" << p.location << "rotation now =" << p.rotation;
 
@@ -304,6 +322,25 @@ const QRect PuzzleWidget::targetSquare(const QPoint &position) const
     y = qBound(0, y, m_GridSize - 1);
 
     return QRect(x * ps, y * ps, ps, ps);
+}
+
+void PuzzleWidget::contextMenuEvent(QContextMenuEvent *event)
+{
+    QRect square = targetSquare(event->pos());
+    int idx = findPiece(square);
+
+    if (idx != -1) {
+        // Buat context menu
+        QMenu menu(this);
+        QAction *rotateAction = menu.addAction("🔄Rotate");
+
+        // Tampilkan menu di posisi mouse
+        QAction *selectedAction = menu.exec(event->globalPos());
+
+        if (selectedAction == rotateAction) {
+            rotatePieceAt(square);
+        }
+    }
 }
 
 

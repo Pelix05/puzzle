@@ -64,6 +64,8 @@ private slots:
     void saveProgress();
     void loadProgress();
 
+public slots:
+    void incrementStepCount();
 
 private:
     void loadImage(const QString &fileName, const QString &grey_fileName);
@@ -84,9 +86,10 @@ private:
     int gridSize;
 
     PuzzleBoardBox *puzzleBoardBox;
+    int moveCount;
+    QLabel *stepLabel;
 
     DatabaseManager *dbManager;
-    int moveCount;
     int level;
 };
 

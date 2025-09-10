@@ -5,6 +5,7 @@
 #include <QPixmap>
 #include <QVector>
 #include <QWidget>
+#include <QContextMenuEvent>
 
 QT_BEGIN_NAMESPACE
 class QDragEnterEvent;
@@ -41,6 +42,8 @@ void addPieceWithRotation(const QPixmap &pixmap, const QPoint &location, int rot
 signals:
     void puzzleCompleted();
     void piecePlaced(QPixmap pixmap, QPoint location, QRect rect);
+    void pieceMoved();
+    void pieceRotated();
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -49,6 +52,7 @@ protected:
     void dropEvent(QDropEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void contextMenuEvent(QContextMenuEvent *event) override;
 
     void paintEvent(QPaintEvent *event) override;
 
@@ -59,6 +63,8 @@ private:
     const QRect targetSquare(const QPoint &position) const;
     void checkCompletion();
     QPixmap m_fullPuzzleImage;
+    QPoint dragStartPosition;
+    QRect dragStartPiece;
 
     QVector<Piece> pieces;
     QRect highlightedRect;

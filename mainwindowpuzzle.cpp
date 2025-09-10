@@ -84,11 +84,28 @@ MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &grey
         );
 
     timer = new QTimer(this);
+    stepLabel = new QLabel(QString("Steps: %1").arg(moveCount));
+    stepLabel->setAlignment(Qt::AlignCenter);
+    stepLabel->setStyleSheet(
+        "QLabel {"
+        "background-color: rgba(0,0,0,180);"
+        "color: white;"
+        "font-weight: bold;"
+        "font-size: 20px;"
+        "padding: 10px;"
+        "border-radius: 10px;"
+        "min-width: 120px;"
+        "}"
+        );
+
+
+    connect(puzzleWidget, &PuzzleWidget::pieceRotated, this, &MainWindowPuzzle::incrementStepCount);
     connect(timer, &QTimer::timeout, this, &MainWindowPuzzle::updateTimer);
     connect(puzzleWidget, &PuzzleWidget::puzzleCompleted, this, &MainWindowPuzzle::setCompleted);
     connect(puzzleWidget, &PuzzleWidget::piecePlaced, this, [this](QPixmap pix, QPoint loc, QRect rect){
         moveHistory.append({pix, loc, rect});
-        moveCount++;
+        incrementStepCount();
+
     });
 
     timer->start(1000);
@@ -169,7 +186,13 @@ void MainWindowPuzzle::setupWidgets()
     leftLayout->addSpacing(20);
     leftLayout->addWidget(piecesFrame);
     leftLayout->addSpacing(20);
-    leftLayout->addWidget(timerLabel);
+    QHBoxLayout *infoLayout = new QHBoxLayout();
+    infoLayout->addWidget(timerLabel);
+    infoLayout->addWidget(stepLabel); // ← Tambahkan stepLabel
+    infoLayout->setSpacing(10);
+
+    // ... dalam leftLayout, ganti addWidget(timerLabel) dengan:
+    leftLayout->addLayout(infoLayout); // ← Gunakan layout yang berisi timer dan step
     leftLayout->addSpacing(20);
     leftLayout->addWidget(resetBtn);
     leftLayout->addWidget(undoBtn);
@@ -248,6 +271,8 @@ void MainWindowPuzzle::resetPuzzle()
 {
     puzzleWidget->clear();
     moveHistory.clear();
+    moveCount = 0;
+    stepLabel->setText(QString("Steps: %1").arg(moveCount));
     setupPuzzle();
 }
 
@@ -258,6 +283,8 @@ void MainWindowPuzzle::undoMove()
     puzzleWidget->removePiece(last.rect);
     piecesList->addPiece(last.pixmap, last.location);
     puzzleWidget->update();
+    moveCount--;
+    stepLabel->setText(QString("Steps: %1").arg(moveCount));
 }
 
 void MainWindowPuzzle::setCompleted()
@@ -523,5 +550,11 @@ void MainWindowPuzzle::loadProgress() {
     timer->start(1000);
 
     QMessageBox::information(this, "Loaded", "Progress loaded from: " + saveData["saveName"].toString());
+}
+
+void MainWindowPuzzle::incrementStepCount()
+{
+    moveCount++;
+    stepLabel->setText(QString("Steps: %1").arg(moveCount));
 }
 
