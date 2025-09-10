@@ -1,17 +1,47 @@
 #include "mainwindowpuzzle.h"
-#include "puzzle/databasemanager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
-#include <QPixmap>
+#include <QInputDialog>
+#include <QPainter>
 #include <QPushButton>
 #include <QRandomGenerator>
-#include <QInputDialog>
+#include <QResizeEvent>
 
+////////////////////////////
+// PuzzleBoardBox Implementation
+////////////////////////////
+void PuzzleBoardBox::paintEvent(QPaintEvent *event)
+{
+    QFrame::paintEvent(event);
 
-MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int grid, int timerSeconds, DatabaseManager *db,  QWidget *parent)
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    QPen pen(QColor(255, 255, 255, 150));
+    pen.setWidth(2);
+    painter.setPen(pen);
+
+    int w = width();
+    int h = height();
+
+    for (int i = 1; i < m_gridSize; ++i)
+        painter.drawLine(i * w / m_gridSize, 0, i * w / m_gridSize, h);
+
+    for (int i = 1; i < m_gridSize; ++i)
+        painter.drawLine(0, i * h / m_gridSize, w, i * h / m_gridSize);
+}
+
+////////////////////////////
+// MainWindowPuzzle Implementation
+////////////////////////////
+MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int grid, int timerSeconds, DatabaseManager *db, QWidget *parent)
     : QMainWindow(parent), timeLeft(timerSeconds), gridSize(grid), dbManager(db), moveCount(0)
 {
+    // Set window size
+    setMinimumSize(1700, 1000);         // force a large window
+    setWindowState(Qt::WindowMaximized); // open maximized (optional)
+
     // ✅ 根据 gridSize 判定难度
     if (grid == 3)
         level = 1; // 简单
@@ -22,22 +52,33 @@ MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &grey
     else
         level = 0; // 默认
 
+
+
     puzzleWidget = new PuzzleWidget(400, gridSize, this);
     piecesList = new PiecesList(puzzleWidget->width(), this);
     greyImage = new QLabel;
 
     timerLabel = new QLabel(QString("Time: %1 s").arg(timeLeft));
+    timerLabel->setAlignment(Qt::AlignCenter);
+    timerLabel->setStyleSheet(
+        "QLabel {"
+        "background-color: rgba(0,0,0,180);"
+        "color: white;"
+        "font-weight: bold;"
+        "font-size: 20px;"
+        "padding: 10px;"
+        "border-radius: 10px;"
+        "min-width: 120px;"
+        "}"
+        );
+
     timer = new QTimer(this);
-
     connect(timer, &QTimer::timeout, this, &MainWindowPuzzle::updateTimer);
-    connect(puzzleWidget, &PuzzleWidget::puzzleCompleted,
-            this, &MainWindowPuzzle::setCompleted);
-    connect(puzzleWidget, &PuzzleWidget::piecePlaced, this,
-            [this](QPixmap pix, QPoint loc, QRect rect){
-                moveHistory.append({pix, loc, rect});
-                moveCount ++;
-            });
-
+    connect(puzzleWidget, &PuzzleWidget::puzzleCompleted, this, &MainWindowPuzzle::setCompleted);
+    connect(puzzleWidget, &PuzzleWidget::piecePlaced, this, [this](QPixmap pix, QPoint loc, QRect rect){
+        moveHistory.append({pix, loc, rect});
+        moveCount++;
+    });
 
     timer->start(1000);
 
@@ -47,30 +88,88 @@ MainWindowPuzzle::MainWindowPuzzle(const QString &colorPath, const QString &grey
 
 void MainWindowPuzzle::setupWidgets()
 {
-    QFrame *frame = new QFrame;
-    QHBoxLayout *frameLayout = new QHBoxLayout(frame);
+    // Set main window background
+    this->setStyleSheet("QMainWindow { background-color: #2c3e50; }");
 
+    // Central frame
+    QFrame *centralFrame = new QFrame(this);
+    centralFrame->setStyleSheet("QFrame { background: transparent; }");
+    setCentralWidget(centralFrame);
+
+    QHBoxLayout *mainLayout = new QHBoxLayout(centralFrame);
+    mainLayout->setContentsMargins(20, 20, 20, 20);
+    mainLayout->setSpacing(20);
+
+    // ------------------ Left Panel ------------------
     QVBoxLayout *leftLayout = new QVBoxLayout;
 
+    // Buttons
     QPushButton *backBtn = new QPushButton("Back");
-    connect(backBtn, &QPushButton::clicked, this, &MainWindowPuzzle::close);
+    QPushButton *resetBtn = new QPushButton("Reset");
+    QPushButton *undoBtn = new QPushButton("Undo");
+    QString btnStyle =
+        "QPushButton { padding: 10px; border-radius: 12px; background: #34495e; color: white; font-weight: bold; }"
+        "QPushButton:hover { background: #3e5c76; }";
+    backBtn->setStyleSheet(btnStyle);
+    resetBtn->setStyleSheet(btnStyle);
+    undoBtn->setStyleSheet(btnStyle);
+
+    // Timer box
+    timerLabel->setStyleSheet(
+        "QLabel {"
+        "background-color: rgba(0,0,0,180);"
+        "color: white;"
+        "font-weight: bold;"
+        "font-size: 20px;"
+        "padding: 10px;"
+        "border-radius: 10px;"
+        "min-width: 120px;"
+        "text-align: center;"
+        "}"
+        );
+    timerLabel->setAlignment(Qt::AlignCenter);
+
+    // Puzzle pieces list inside a frame
+    QFrame *piecesFrame = new QFrame;
+    piecesFrame->setStyleSheet(
+        "QFrame {"
+        "background-color: rgba(255, 255, 255, 50);"
+        "border-radius: 15px;"
+        "padding: 10px;"
+        "}"
+        );
+    QVBoxLayout *piecesLayout = new QVBoxLayout(piecesFrame);
+    piecesLayout->addWidget(greyImage);
+    piecesLayout->addWidget(piecesList);
+
+    // Add widgets to left layout
     leftLayout->addWidget(backBtn);
-
-    leftLayout->addWidget(greyImage);
-    leftLayout->addWidget(piecesList);
+    leftLayout->addSpacing(20);
+    leftLayout->addWidget(piecesFrame);
+    leftLayout->addSpacing(20);
     leftLayout->addWidget(timerLabel);
+    leftLayout->addSpacing(20);
+    leftLayout->addWidget(resetBtn);
+    leftLayout->addWidget(undoBtn);
+    leftLayout->addStretch();
 
-    QPushButton *resetButton = new QPushButton("Reset");
-    QPushButton *undoButton = new QPushButton("Undo");
-    connect(resetButton, &QPushButton::clicked, this, &MainWindowPuzzle::resetPuzzle);
-    connect(undoButton, &QPushButton::clicked, this, &MainWindowPuzzle::undoMove);
-    leftLayout->addWidget(resetButton);
-    leftLayout->addWidget(undoButton);
+    // ------------------ Right Panel ------------------
+    puzzleBoardBox = new PuzzleBoardBox(gridSize);
+    QVBoxLayout *rightLayout = new QVBoxLayout(puzzleBoardBox);
+    rightLayout->setContentsMargins(5, 5, 5, 5);
+    rightLayout->addWidget(puzzleWidget);
 
-    frameLayout->addLayout(leftLayout);
-    frameLayout->addWidget(puzzleWidget);
-    setCentralWidget(frame);
+    // Add left and right panels to main layout
+    mainLayout->addLayout(leftLayout, 0);   // left panel gets natural width
+    mainLayout->addWidget(puzzleBoardBox, 1); // right panel expands
+
+    // ------------------ Connections ------------------
+    connect(backBtn, &QPushButton::clicked, this, &MainWindowPuzzle::close);
+    connect(resetBtn, &QPushButton::clicked, this, &MainWindowPuzzle::resetPuzzle);
+    connect(undoBtn, &QPushButton::clicked, this, &MainWindowPuzzle::undoMove);
 }
+
+
 
 void MainWindowPuzzle::loadImage(const QString &fileName, const QString &grey_fileName)
 {
@@ -80,38 +179,11 @@ void MainWindowPuzzle::loadImage(const QString &fileName, const QString &grey_fi
 
     QImage greyImg = newImage.toImage().convertToFormat(QImage::Format_Grayscale8);
     QPixmap greyPix = QPixmap::fromImage(greyImg);
-
     greyPix = greyPix.scaled(QSize(100,100), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     greyImage->setPixmap(greyPix);
 
     setupPuzzle();
 }
-
-void MainWindowPuzzle::resetPuzzle()
-{
-    puzzleWidget->clear();
-
-    moveHistory.clear();
-
-    setupPuzzle();
-}
-
-void MainWindowPuzzle::undoMove()
-{
-    if (moveHistory.isEmpty())
-        return;
-
-    Move last = moveHistory.takeLast();
-
-    // Hapus dari puzzleWidget
-    puzzleWidget->removePiece(last.rect);
-
-    // Balik ke piecesList
-    piecesList->addPiece(last.pixmap, last.location);
-
-    puzzleWidget->update();
-}
-
 
 void MainWindowPuzzle::setupPuzzle()
 {
@@ -126,7 +198,6 @@ void MainWindowPuzzle::setupPuzzle()
     piecesList->clear();
 
     int pieceSize = puzzleWidget->width() / gridSize;
-
     int rotations[4] = {0, 90, 180, 270};
 
     for(int y = 0; y < gridSize; ++y)
@@ -138,11 +209,26 @@ void MainWindowPuzzle::setupPuzzle()
         }
 }
 
+void MainWindowPuzzle::resetPuzzle()
+{
+    puzzleWidget->clear();
+    moveHistory.clear();
+    setupPuzzle();
+}
+
+void MainWindowPuzzle::undoMove()
+{
+    if(moveHistory.isEmpty()) return;
+    Move last = moveHistory.takeLast();
+    puzzleWidget->removePiece(last.rect);
+    piecesList->addPiece(last.pixmap, last.location);
+    puzzleWidget->update();
+}
 
 void MainWindowPuzzle::setCompleted()
 {
     timer->stop();
-    QMessageBox::information(this, "Puzzle Selesai", "Selamat! Puzzle selesai.");
+    QMessageBox::information(this, "Puzzle Complete", "Congratulations! Puzzle finished.");
     promptAndSaveRecord();
 }
 
@@ -153,7 +239,16 @@ void MainWindowPuzzle::updateTimer()
     if(timeLeft <= 0)
     {
         timer->stop();
-        QMessageBox::warning(this, "Time's up!", "Waktu habis!");
+        QMessageBox::warning(this, "Time's up!", "Time is over!");
+    }
+}
+void MainWindowPuzzle::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+
+    // Resize puzzle board dynamically
+    if (puzzleWidget && !puzzleImage.isNull()) {
+        setupPuzzle();
     }
 }
 
@@ -162,8 +257,8 @@ void MainWindowPuzzle::promptAndSaveRecord()
     int duration = 1000 - timeLeft;
     int steps = moveCount;
 
-     qDebug() << "[Game] Calculated duration:" << duration << "steps:" << steps;
 
+     qDebug() << "[Game] Calculated duration:" << duration << "steps:" << steps;
 
     bool ok;
     QString username = QInputDialog::getText(this, "Enter your name",
@@ -208,4 +303,3 @@ void MainWindowPuzzle::promptAndSaveRecord()
         qDebug() << "[Game] User cancelled or entered empty name";
     }
 }
-

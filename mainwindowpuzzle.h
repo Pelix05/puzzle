@@ -5,16 +5,40 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QTimer>
+#include <QFrame>
+#include <QPixmap>
+#include <QResizeEvent>
 #include "puzzle/pieceslist.h"
 #include "puzzle/puzzlewidget.h"
 #include "puzzle/databasemanager.h"
+
+class PuzzleBoardBox : public QFrame {
+    Q_OBJECT
+public:
+    explicit PuzzleBoardBox(int gridSize, QWidget *parent = nullptr)
+        : QFrame(parent), m_gridSize(gridSize)
+    {
+        setStyleSheet(
+            "QFrame {"
+            "background-color: rgba(255, 255, 255, 50);"
+            "border-radius: 15px;"
+            "}"
+            );
+    }
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    int m_gridSize;
+};
 
 class MainWindowPuzzle : public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int gridSize, int timerSeconds,  DatabaseManager *dbManager, QWidget *parent = nullptr);
-
+    MainWindowPuzzle(const QString &colorPath, const QString &greyPath, int gridSize,
+                     int timerSeconds, DatabaseManager *dbManager, QWidget *parent = nullptr);
 
     struct Move {
         QPixmap pixmap;
@@ -22,6 +46,9 @@ public:
         QRect rect;
     };
     QVector<Move> moveHistory;
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;  // <--- added for dynamic resizing
 
 private slots:
     void setCompleted();
@@ -44,10 +71,11 @@ private:
     int timeLeft;
     int gridSize;
 
+    PuzzleBoardBox *puzzleBoardBox;
+
     DatabaseManager *dbManager;
     int moveCount;
     int level;
 };
-
 
 #endif // MAINWINDOWPUZZLE_H
