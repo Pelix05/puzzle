@@ -22,15 +22,21 @@ void PuzzleBoardBox::paintEvent(QPaintEvent *event)
     pen.setWidth(2);
     painter.setPen(pen);
 
-    int w = width();
-    int h = height();
+    int boardSize = qMin(width(), height());
+    int pieceSize = boardSize / m_gridSize;
+
+    // Draw internal grid lines
+    for (int i = 1; i < m_gridSize; ++i)
+        painter.drawLine(i * pieceSize, 0, i * pieceSize, boardSize);
 
     for (int i = 1; i < m_gridSize; ++i)
-        painter.drawLine(i * w / m_gridSize, 0, i * w / m_gridSize, h);
+        painter.drawLine(0, i * pieceSize, boardSize, i * pieceSize);
 
-    for (int i = 1; i < m_gridSize; ++i)
-        painter.drawLine(0, i * h / m_gridSize, w, i * h / m_gridSize);
+    // Draw outer border (right & bottom)
+    painter.drawRect(0, 0, pieceSize * m_gridSize, pieceSize * m_gridSize);
 }
+
+
 
 ////////////////////////////
 // MainWindowPuzzle Implementation
@@ -187,17 +193,27 @@ void MainWindowPuzzle::loadImage(const QString &fileName, const QString &grey_fi
 
 void MainWindowPuzzle::setupPuzzle()
 {
+    if (puzzleWidget->width() <= 0 || puzzleWidget->height() <= 0) return;
+
+    // Make puzzle widget square
+    int boardSize = qMin(puzzleWidget->width(), puzzleWidget->height());
+    puzzleWidget->setFixedSize(boardSize, boardSize);
+
+    // Compute piece size
+    int pieceSize = boardSize / gridSize;
+
+    // Crop and scale puzzle image to fit exactly the grid
     int size = qMin(puzzleImage.width(), puzzleImage.height());
     puzzleImage = puzzleImage.copy((puzzleImage.width() - size)/2,
                                    (puzzleImage.height() - size)/2,
-                                   size, size).scaled(puzzleWidget->width(),
-                              puzzleWidget->height(),
+                                   size, size)
+                      .scaled(pieceSize * gridSize,
+                              pieceSize * gridSize,
                               Qt::IgnoreAspectRatio,
                               Qt::SmoothTransformation);
 
     piecesList->clear();
 
-    int pieceSize = puzzleWidget->width() / gridSize;
     int rotations[4] = {0, 90, 180, 270};
 
     for(int y = 0; y < gridSize; ++y)
@@ -207,7 +223,10 @@ void MainWindowPuzzle::setupPuzzle()
             int rot = rotations[QRandomGenerator::global()->bounded(4)];
             piecesList->addPiece(pieceImage, QPoint(x, y), rot);
         }
+
+    puzzleWidget->update();
 }
+
 
 void MainWindowPuzzle::resetPuzzle()
 {
@@ -246,11 +265,14 @@ void MainWindowPuzzle::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
 
-    // Resize puzzle board dynamically
-    if (puzzleWidget && !puzzleImage.isNull()) {
+    if (puzzleWidget && puzzleBoardBox && !puzzleImage.isNull()) {
+        // Make puzzle widget square based on the puzzleBoardBox
+        int boardSize = qMin(puzzleBoardBox->width(), puzzleBoardBox->height());
+        puzzleWidget->setFixedSize(boardSize, boardSize);
         setupPuzzle();
     }
 }
+
 
 void MainWindowPuzzle::promptAndSaveRecord()
 {

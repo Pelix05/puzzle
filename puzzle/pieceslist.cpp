@@ -53,16 +53,22 @@ void PiecesList::dropEvent(QDropEvent *event)
 
 void PiecesList::addPiece(const QPixmap &pixmap, const QPoint &location, int rotation)
 {
-    QListWidgetItem *pieceItem = new QListWidgetItem(this);
+    // Compute thumbnail size dynamically to match puzzle piece
+    int thumbnailSize = m_PieceSize; // this should be updated when puzzle size changes
     QPixmap rotated = pixmap.transformed(QTransform().rotate(rotation), Qt::SmoothTransformation);
-    pieceItem->setIcon(QIcon(rotated));
-    pieceItem->setData(Qt::UserRole, QVariant(pixmap));
-    pieceItem->setData(Qt::UserRole+1, location);
-    pieceItem->setData(Qt::UserRole+2, rotation);
-    pieceItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
-    qDebug() << "[PiecesList] Piece at" << location << "rotation =" << rotation;
+    QPixmap scaledPix = rotated.scaled(thumbnailSize, thumbnailSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
+    QListWidgetItem *pieceItem = new QListWidgetItem(this);
+    pieceItem->setIcon(QIcon(scaledPix));
+    pieceItem->setSizeHint(QSize(thumbnailSize + 10, thumbnailSize + 10)); // add some spacing
+    pieceItem->setData(Qt::UserRole, QVariant(pixmap));       // original pixmap
+    pieceItem->setData(Qt::UserRole+1, location);             // original location
+    pieceItem->setData(Qt::UserRole+2, rotation);             // rotation
+    pieceItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
+
+    qDebug() << "[PiecesList] Piece at" << location << "rotation =" << rotation;
 }
+
 
 
 
@@ -88,4 +94,18 @@ void PiecesList::startDrag(Qt::DropActions /*supportedActions*/)
 
     if (drag->exec(Qt::MoveAction) == Qt::MoveAction)
         delete takeItem(row(item));
+}
+void PiecesList::setPieceSize(int size)
+{
+    m_PieceSize = size;
+    setIconSize(QSize(size, size));
+    // Optional: update all existing items
+    for (int i = 0; i < count(); ++i) {
+        QListWidgetItem *item = this->item(i);
+        QPixmap pixmap = qvariant_cast<QPixmap>(item->data(Qt::UserRole));
+        int rotation = item->data(Qt::UserRole+2).toInt();
+        QPixmap rotated = pixmap.transformed(QTransform().rotate(rotation), Qt::SmoothTransformation);
+        item->setIcon(QIcon(rotated.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+        item->setSizeHint(QSize(size + 10, size + 10));
+    }
 }

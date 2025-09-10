@@ -27,6 +27,7 @@ public:
     void removePiece(const QRect &rect);
     void addPieceWithRotation(const QPixmap &pixmap, const QPoint &location, int rotation);
     void rotatePieceAt(const QRect &square);
+    void setPuzzleImage(const QPixmap &pix);
 
 
 signals:
@@ -55,7 +56,7 @@ private:
     int findPiece(const QRect &pieceRect) const;
     const QRect targetSquare(const QPoint &position) const;
     void checkCompletion();
-
+    QPixmap m_fullPuzzleImage;
 
     QVector<Piece> pieces;
     QRect highlightedRect;
