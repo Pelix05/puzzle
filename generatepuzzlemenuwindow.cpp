@@ -49,18 +49,18 @@ GeneratePuzzleMenuWindow::GeneratePuzzleMenuWindow(DatabaseManager* db)
                               "margin-bottom: 20px;"
                               "}");
 
-    // Image preview
     imagePreview = new QLabel("Select an image to preview");
     imagePreview->setAlignment(Qt::AlignCenter);
     imagePreview->setFixedSize(400, 400);
     imagePreview->setStyleSheet(
         "QLabel {"
-        "background: rgba(255,255,255,50);"
-        "border: 2px dashed rgba(255,255,255,100);"
+        "background: rgba(64, 64, 64, 180);"  // Semi-translucent grey with alpha 180 (not too transparent)
+        "border: 2px solid rgba(255, 255, 255, 180);"  // Soft white border
         "border-radius: 10px;"
-        "color: rgba(255,255,255,150);"
+        "color: rgba(255, 255, 255, 200);"  // White text with slight opacity
         "font-size: 14px;"
-        "}");
+        "}"
+        );
 
 
     QPushButton *chooseBtn = new QPushButton("📷 Select your photo");

@@ -217,8 +217,6 @@ void MainWindowPuzzle::setupWidgets()
 }
 
 
-
-
 void MainWindowPuzzle::loadImage(const QString &fileName, const QString &grey_fileName)
 {
     QPixmap newImage;
