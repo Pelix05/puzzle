@@ -62,6 +62,7 @@ GeneratePuzzleMenuWindow::GeneratePuzzleMenuWindow(DatabaseManager* db)
         "font-size: 14px;"
         "}");
 
+
     QPushButton *chooseBtn = new QPushButton("📷 Select your photo");
     chooseBtn->setFixedSize(250, 50);
 
@@ -90,35 +91,44 @@ GeneratePuzzleMenuWindow::GeneratePuzzleMenuWindow(DatabaseManager* db)
 
     chooseBtn->setStyleSheet(buttonStyle);
 
-    // Grid & timer controls in the center
-    QLabel *gridLabel = new QLabel("Select Grid number:");
-    gridLabel->setStyleSheet("QLabel { color:white; font-weight:bold; font-size:16px; }");
-    QSpinBox *gridSpin = new QSpinBox;
-    gridSpin->setRange(2,10);
-    gridSpin->setValue(gridSize);
-    gridSpin->setStyleSheet("QSpinBox { background:white; border-radius:6px; padding:5px; min-width:80px; }");
-
-    QLabel *timerLabel = new QLabel("Set timer (seconds):");
-    timerLabel->setStyleSheet("QLabel { color:white; font-weight:bold; font-size:16px; }");
-    QSpinBox *timerSpin = new QSpinBox;
-    timerSpin->setRange(10,3600);
-    timerSpin->setValue(timerSeconds);
-    timerSpin->setStyleSheet("QSpinBox { background:white; border-radius:6px; padding:5px; min-width:80px; }");
-
+    // Create layout for the grid & timer settings with black background
     QVBoxLayout *settingsLayout = new QVBoxLayout();
     settingsLayout->setSpacing(15);
     settingsLayout->setAlignment(Qt::AlignCenter);
 
-    QHBoxLayout *gridLayout = new QHBoxLayout();
+    // Grid setting layout
+    QLabel *gridLabel = new QLabel("Select Grid number:");
+    gridLabel->setStyleSheet("QLabel { color:white; font-weight:bold; font-size:16px; }");
+    QSpinBox *gridSpin = new QSpinBox;
+    gridSpin->setRange(2, 10);
+    gridSpin->setValue(gridSize);
+    gridSpin->setStyleSheet("QSpinBox { background:white; border-radius:6px; padding:5px; min-width:80px; }");
+
+    // Apply black background to grid setting box
+    QWidget *gridBox = new QWidget();
+    QHBoxLayout *gridLayout = new QHBoxLayout(gridBox);
     gridLayout->addWidget(gridLabel);
     gridLayout->addWidget(gridSpin);
+    gridBox->setStyleSheet("QWidget { background-color: black; border-radius: 6px; padding: 10px; }");
 
-    QHBoxLayout *timerLayout = new QHBoxLayout();
+    // Timer setting layout
+    QLabel *timerLabel = new QLabel("Set timer (seconds):");
+    timerLabel->setStyleSheet("QLabel { color:white; font-weight:bold; font-size:16px; }");
+    QSpinBox *timerSpin = new QSpinBox;
+    timerSpin->setRange(10, 3600);
+    timerSpin->setValue(timerSeconds);
+    timerSpin->setStyleSheet("QSpinBox { background:white; border-radius:6px; padding:5px; min-width:80px; }");
+
+    // Apply black background to timer setting box
+    QWidget *timerBox = new QWidget();
+    QHBoxLayout *timerLayout = new QHBoxLayout(timerBox);
     timerLayout->addWidget(timerLabel);
     timerLayout->addWidget(timerSpin);
+    timerBox->setStyleSheet("QWidget { background-color: black; border-radius: 6px; padding: 10px; }");
 
-    settingsLayout->addLayout(gridLayout);
-    settingsLayout->addLayout(timerLayout);
+    // Add grid and timer boxes to the layout
+    settingsLayout->addWidget(gridBox);
+    settingsLayout->addWidget(timerBox);
 
     // Start button
     QPushButton *startBtn = new QPushButton("🚀 Start Puzzle");
@@ -132,9 +142,10 @@ GeneratePuzzleMenuWindow::GeneratePuzzleMenuWindow(DatabaseManager* db)
     overlayLayout->addStretch();
     overlayLayout->addWidget(titleLabel);
     overlayLayout->addWidget(imagePreview, 0, Qt::AlignCenter);
+    overlayLayout->addSpacing(40);  // Increased space between image preview and button
     overlayLayout->addWidget(chooseBtn, 0, Qt::AlignCenter);
-    overlayLayout->addSpacing(20);
-    overlayLayout->addLayout(settingsLayout); // ✅ Grid + Timer in the middle
+    overlayLayout->addSpacing(20);  // Space between button and the settings layout
+    overlayLayout->addLayout(settingsLayout);  // Place it inside the overlay layout
     overlayLayout->addSpacing(30);
     overlayLayout->addWidget(startBtn, 0, Qt::AlignCenter);
     overlayLayout->addSpacing(20);
@@ -179,4 +190,3 @@ void GeneratePuzzleMenuWindow::startCustomPuzzle()
     win->show();
     this->close(); // close the generate puzzle menu
 }
-

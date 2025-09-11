@@ -135,12 +135,20 @@ void MainWindowPuzzle::setupWidgets()
     QPushButton *backBtn = new QPushButton("Back");
     QPushButton *resetBtn = new QPushButton("Reset");
     QPushButton *undoBtn = new QPushButton("Undo");
+    QPushButton *saveBtn = new QPushButton("Save");
+    QPushButton *loadBtn = new QPushButton("Load");
+
+    // Apply same style to all buttons
     QString btnStyle =
         "QPushButton { padding: 10px; border-radius: 12px; background: #34495e; color: white; font-weight: bold; }"
         "QPushButton:hover { background: #3e5c76; }";
+
+    // Apply style to buttons
     backBtn->setStyleSheet(btnStyle);
     resetBtn->setStyleSheet(btnStyle);
     undoBtn->setStyleSheet(btnStyle);
+    saveBtn->setStyleSheet(btnStyle);  // Save button style
+    loadBtn->setStyleSheet(btnStyle);  // Load button style
 
     // Timer box
     timerLabel->setStyleSheet(
@@ -170,32 +178,24 @@ void MainWindowPuzzle::setupWidgets()
     piecesLayout->addWidget(greyImage);
     piecesLayout->addWidget(piecesList);
 
-    // Add timer and control buttons
-    QPushButton *resetButton = new QPushButton("Reset");
-    QPushButton *undoButton = new QPushButton("Undo");
-    QPushButton *saveBtn = new QPushButton("Save");
-    QPushButton *loadBtn = new QPushButton("Load");
-    leftLayout->addWidget(saveBtn);
-    leftLayout->addWidget(loadBtn);
-
-    connect(saveBtn, &QPushButton::clicked, this, &MainWindowPuzzle::saveProgress);
-    connect(loadBtn, &QPushButton::clicked, this, &MainWindowPuzzle::loadProgress);
-
-    // Add widgets to left layout
+    // Add buttons to left layout
     leftLayout->addWidget(backBtn);
     leftLayout->addSpacing(20);
     leftLayout->addWidget(piecesFrame);
     leftLayout->addSpacing(20);
+
     QHBoxLayout *infoLayout = new QHBoxLayout();
     infoLayout->addWidget(timerLabel);
-    infoLayout->addWidget(stepLabel); // ← Tambahkan stepLabel
+    infoLayout->addWidget(stepLabel); // Add the step label
     infoLayout->setSpacing(10);
 
-    // ... dalam leftLayout, ganti addWidget(timerLabel) dengan:
-    leftLayout->addLayout(infoLayout); // ← Gunakan layout yang berisi timer dan step
+    leftLayout->addLayout(infoLayout); // Add layout containing timer and steps
     leftLayout->addSpacing(20);
     leftLayout->addWidget(resetBtn);
     leftLayout->addWidget(undoBtn);
+    leftLayout->addSpacing(20);
+    leftLayout->addWidget(saveBtn);  // Add Save button
+    leftLayout->addWidget(loadBtn);  // Add Load button
     leftLayout->addStretch();
 
     // ------------------ Right Panel ------------------
@@ -212,7 +212,10 @@ void MainWindowPuzzle::setupWidgets()
     connect(backBtn, &QPushButton::clicked, this, &MainWindowPuzzle::close);
     connect(resetBtn, &QPushButton::clicked, this, &MainWindowPuzzle::resetPuzzle);
     connect(undoBtn, &QPushButton::clicked, this, &MainWindowPuzzle::undoMove);
+    connect(saveBtn, &QPushButton::clicked, this, &MainWindowPuzzle::saveProgress);
+    connect(loadBtn, &QPushButton::clicked, this, &MainWindowPuzzle::loadProgress);
 }
+
 
 
 
